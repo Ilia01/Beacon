@@ -15,10 +15,24 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const beacon = document.getElementById('beacon');
 
-  beacon.addEventListener('mouseenter', () => {
-    window.electronAPI.setIgnoreMouseEvents(false);
+  let dragging = false;
+  const position = {};
+
+  beacon.addEventListener('mousedown', (ev) => {
+    position.x = ev.screenX;
+    position.y = ev.screenY;
+    dragging = true;
   });
-  beacon.addEventListener('mouseleave', () => {
-    window.electronAPI.setIgnoreMouseEvents(true);
+  document.addEventListener('mouseup', () => {
+    dragging = false;
+  });
+  document.addEventListener('mousemove', (ev) => {
+    if (!dragging) return;
+
+    const dx = ev.screenX - position.x;
+    const dy = ev.screenY - position.y;
+    window.electronAPI.setPosition({ dx, dy });
+    position.x = ev.screenX;
+    position.y = ev.screenY;
   });
 });

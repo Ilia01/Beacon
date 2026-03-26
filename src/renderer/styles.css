@@ -12,8 +12,9 @@ body {
 
 .coach {
   position: fixed;
-  top: 24px;
-  right: 24px;
+  right: 0;
+  left: 0;
+  padding-left: 4px;
   display: flex;
   flex-direction: row-reverse;
   align-items: center;
@@ -30,8 +31,6 @@ body {
   flex-shrink: 0;
   z-index: 2;
   transition: all 0.3s ease;
-
-  -webkit-app-region: drag;
 }
 
 /* Idle state - dim dot */

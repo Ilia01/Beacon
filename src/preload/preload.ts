@@ -1,5 +1,4 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
-
 type StateChangeEvent =
   | { state: 'active'; prompt: string }
   | { state: 'cooldown' }
@@ -11,7 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'state-change',
       (_event: IpcRendererEvent, value: StateChangeEvent) => callback(value)
     ),
-  setIgnoreMouseEvents: (ignore: boolean) => {
-    ipcRenderer.send('set-ignore-mouse', ignore);
+  setPosition: (position: { dx: number; dy: number }) => {
+    ipcRenderer.send('set-position', position);
   },
 });

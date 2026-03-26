@@ -1,8 +1,10 @@
-import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain, screen } from 'electron';
+import Store from 'electron-store';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import config from '../../data/config.json' with { type: 'json' };
 import prompts from '../../data/prompts.json' with { type: 'json' };
+import { type position, type StateChangeEvent } from '../types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');
@@ -12,12 +14,23 @@ const promptArr = Object.values(prompts);
 let timerId: NodeJS.Timeout;
 let timerRunning = true;
 
+const store = new Store<position>({
+  defaults: {
+    x: 0,
+    y: 0,
+  },
+});
+
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]!;
 }
 
 function getRandomPrompt() {
   return pickRandom(pickRandom(promptArr));
+}
+
+function sendStateChange(win: BrowserWindow, event: StateChangeEvent) {
+  win.webContents.send('state-change', event);
 }
 
 function handleSetPrompt(win: BrowserWindow) {
@@ -27,15 +40,10 @@ function handleSetPrompt(win: BrowserWindow) {
   );
 
   timerId = setTimeout(() => {
-    win.webContents.send('state-change', {
-      state: 'active',
-      prompt: getRandomPrompt(),
-    });
+    sendStateChange(win, { state: 'active', prompt: getRandomPrompt() });
 
     timerId = setTimeout(() => {
-      win.webContents.send('state-change', {
-        state: 'cooldown',
-      });
+      sendStateChange(win, { state: 'cooldown' });
       handleSetPrompt(win);
     }, config.active_duration_ms);
   }, timeout);
@@ -43,11 +51,14 @@ function handleSetPrompt(win: BrowserWindow) {
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 600,
+    height: 60,
     frame: false,
+    resizable: false,
     transparent: true,
     hasShadow: false,
+    x: store.get('x'),
+    y: store.get('y'),
     webPreferences: {
       preload: path.join(rootDir, 'dist', 'preload', 'preload.js'),
     },
@@ -55,11 +66,33 @@ const createWindow = () => {
 
   win.setAlwaysOnTop(true, 'floating');
 
-  ipcMain.on('set-ignore-mouse', (_event, ignore) => {
-    win.setIgnoreMouseEvents(ignore);
+  ipcMain.on('set-position', (_event, pos: { dx: number; dy: number }) => {
+    const [currentX, currentY] = win.getPosition() as [number, number];
+    win.setPosition(currentX + pos.dx, currentY + pos.dy);
   });
 
-  win.setIgnoreMouseEvents(true, { forward: true });
+  setInterval(() => {
+    const cursor = screen.getCursorScreenPoint();
+    const rect = win.getBounds();
+
+    if (
+      cursor.x >= rect.x &&
+      cursor.x <= rect.x + rect.width &&
+      cursor.y >= rect.y &&
+      cursor.y <= rect.y + rect.height
+    ) {
+      win.setIgnoreMouseEvents(false);
+    } else {
+      win.setIgnoreMouseEvents(true);
+    }
+  }, 16);
+
+  win.on('moved', () => {
+    const [x, y] = win.getPosition();
+
+    store.set('x', x);
+    store.set('y', y);
+  });
 
   win.loadFile(path.join(rootDir, 'src', 'renderer', 'index.html'));
   // win.webContents.openDevTools();
@@ -70,10 +103,11 @@ const createWindow = () => {
 app.whenReady().then(() => {
   const win = createWindow();
 
+  // TODO: captures `win` - will break if window is recreated
   globalShortcut.register('CommandOrControl+Shift+M', () => {
     if (timerRunning) {
       clearTimeout(timerId);
-      win.webContents.send('state-change', { state: 'idle' });
+      sendStateChange(win, { state: 'idle' });
       timerRunning = false;
     } else {
       handleSetPrompt(win);

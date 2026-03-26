@@ -17,7 +17,8 @@ Designed for players with ADHD or anyone who tunnels on lane and forgets the big
 
 - [x] Sound beep on active state
 - [x] Toggle on/off with Ctrl+Shift+M
-- [ ] Save/restore overlay position
+- [x] Draggable overlay with position persistence
+- [x] Click-through transparent areas
 - [ ] Riot Live Client API integration (`127.0.0.1:2999`)
   - [ ] Phase-aware prompt selection based on game time (early/mid/late)
   - [ ] Gold threshold triggers for recall timing
