@@ -36,7 +36,7 @@ function sendStateChange(win: BrowserWindow, event: StateChangeEvent) {
 function handleSetPrompt(win: BrowserWindow) {
   const timeout = Math.floor(
     Math.random() * (config.idle_max_ms - config.idle_min_ms) +
-      config.idle_min_ms
+      config.idle_min_ms,
   );
 
   timerId = setTimeout(() => {
@@ -95,7 +95,14 @@ const createWindow = () => {
   });
 
   win.loadFile(path.join(rootDir, 'src', 'renderer', 'index.html'));
-  // win.webContents.openDevTools();
+
+  if (!app.isPackaged) {
+    const width = 1280;
+    const height = 600;
+
+    win.webContents.openDevTools();
+    win.setSize(width, height);
+  }
 
   return win;
 };
