@@ -1,0 +1,86 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: transparent;
+  overflow: hidden;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.coach {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 0;
+}
+
+/* The always-visible dot */
+.beacon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #1a1a2e;
+  border: 2px solid #2d2d44;
+  flex-shrink: 0;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+/* Idle state - dim dot */
+.coach.idle .beacon {
+  background: #1a1a2e;
+  border-color: #2d2d44;
+  box-shadow: none;
+}
+
+/* Active state - glowing dot */
+.coach.active .beacon {
+  background: #00d4aa;
+  border-color: #00d4aa;
+  box-shadow: 0 0 8px #00d4aa88, 0 0 20px #00d4aa44;
+}
+
+/* Cooldown state - fading dot */
+.coach.cooldown .beacon {
+  background: #2d2d44;
+  border-color: #2d2d44;
+  box-shadow: none;
+}
+
+/* The sliding prompt container */
+.prompt-container {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s ease;
+  margin-right: -2px;
+}
+
+.coach.active .prompt-container {
+  max-width: 500px;
+  opacity: 1;
+}
+
+/* The prompt text styling */
+.prompt-text {
+  display: inline-block;
+  padding: 8px 16px 8px 14px;
+  background: #1a1a2eee;
+  border: 1px solid #00d4aa55;
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  color: #e0e0e0;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px #00000066;
+}
