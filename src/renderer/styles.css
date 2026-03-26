@@ -30,6 +30,8 @@ body {
   flex-shrink: 0;
   z-index: 2;
   transition: all 0.3s ease;
+
+  -webkit-app-region: drag;
 }
 
 /* Idle state - dim dot */
@@ -43,7 +45,9 @@ body {
 .coach.active .beacon {
   background: #00d4aa;
   border-color: #00d4aa;
-  box-shadow: 0 0 8px #00d4aa88, 0 0 20px #00d4aa44;
+  box-shadow:
+    0 0 8px #00d4aa88,
+    0 0 20px #00d4aa44;
 }
 
 /* Cooldown state - fading dot */
@@ -59,8 +63,9 @@ body {
   opacity: 0;
   overflow: hidden;
   white-space: nowrap;
-  transition: max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.3s ease;
+  transition:
+    max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
   margin-right: -2px;
 }
 

@@ -1,5 +1,5 @@
 {
-  "idle_min_ms": 2000,
-  "idle_max_ms": 5000,
+  "idle_min_ms": 15000,
+  "idle_max_ms": 45000,
   "active_duration_ms": 5000
 }

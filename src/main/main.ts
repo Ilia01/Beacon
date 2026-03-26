@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import config from '../../data/config.json' with { type: 'json' };
@@ -45,14 +45,18 @@ const createWindow = () => {
     frame: false,
     transparent: true,
     hasShadow: false,
-    movable: true,
     webPreferences: {
       preload: path.join(rootDir, 'dist', 'preload', 'preload.js'),
     },
   });
 
   win.setAlwaysOnTop(true, 'floating');
-  // win.setIgnoreMouseEvents(true);
+
+  ipcMain.on('set-ignore-mouse', (_event, ignore) => {
+    win.setIgnoreMouseEvents(ignore);
+  });
+
+  win.setIgnoreMouseEvents(true, { forward: true });
 
   win.loadFile(path.join(rootDir, 'src', 'renderer', 'index.html'));
   // win.webContents.openDevTools();

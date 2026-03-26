@@ -11,4 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'state-change',
       (_event: IpcRendererEvent, value: StateChangeEvent) => callback(value)
     ),
+  setIgnoreMouseEvents: (ignore: boolean) => {
+    ipcRenderer.send('set-ignore-mouse', ignore);
+  },
 });
