@@ -1,3 +1,13 @@
+:root {
+  --glow: #00ffc8;
+  --glow-mid: #00ffc866;
+  --glow-dim: #00ffc822;
+  --surface: #0a0e1a;
+  --surface-glass: #0a0e1acc;
+  --text: #d0f0e8;
+  --border: #1a2040;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -7,7 +17,8 @@
 body {
   background: transparent;
   overflow: hidden;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .coach {
@@ -21,70 +32,163 @@ body {
   gap: 0;
 }
 
-/* The always-visible dot */
 .beacon {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: #1a1a2e;
-  border: 2px solid #2d2d44;
   flex-shrink: 0;
   z-index: 2;
-  transition: all 0.3s ease;
+  cursor: grab;
+  position: relative;
+  transition:
+    background 0.4s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease;
 }
 
-/* Idle state - dim dot */
+.beacon:active {
+  cursor: grabbing;
+  transform: scale(0.88);
+}
+
+/* Outer dashed ring */
+.beacon::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  pointer-events: none;
+  transition: border-color 0.4s ease;
+}
+
+/* Expanding ping wave */
+.beacon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  pointer-events: none;
+}
+
 .coach.idle .beacon {
-  background: #1a1a2e;
-  border-color: #2d2d44;
-  box-shadow: none;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  box-shadow: 0 0 6px #0003;
+  animation: breathe 4s ease-in-out infinite;
 }
 
-/* Active state - glowing dot */
+.coach.idle .beacon::before {
+  border-color: #ffffff08;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
 .coach.active .beacon {
-  background: #00d4aa;
-  border-color: #00d4aa;
+  background: var(--glow);
+  border: 2px solid var(--glow);
   box-shadow:
-    0 0 8px #00d4aa88,
-    0 0 20px #00d4aa44;
+    0 0 8px var(--glow-mid),
+    0 0 24px var(--glow-dim);
+  animation: none;
+  opacity: 1;
 }
 
-/* Cooldown state - fading dot */
+.coach.active .beacon::before {
+  border-color: var(--glow-mid);
+  border-style: dashed;
+  animation: spin-ring 4s linear infinite;
+}
+
+.coach.active .beacon::after {
+  border-color: var(--glow);
+  animation: ping-wave 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes spin-ring {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ping-wave {
+  0% {
+    inset: 0;
+    opacity: 0.5;
+  }
+  100% {
+    inset: -16px;
+    opacity: 0;
+  }
+}
+
 .coach.cooldown .beacon {
-  background: #2d2d44;
-  border-color: #2d2d44;
+  background: var(--border);
+  border: 2px solid var(--border);
   box-shadow: none;
+  animation: none;
+  opacity: 1;
 }
 
-/* The sliding prompt container */
+.coach.cooldown .beacon::before,
+.coach.cooldown .beacon::after {
+  border-color: transparent;
+  animation: none;
+}
+
 .prompt-container {
   max-width: 0;
   opacity: 0;
   overflow: hidden;
   white-space: nowrap;
-  transition:
-    max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.3s ease;
   margin-right: -2px;
+  transition:
+    max-width 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.4s ease 0.05s;
 }
 
 .coach.active .prompt-container {
-  max-width: 500px;
+  max-width: 600px;
   opacity: 1;
 }
 
-/* The prompt text styling */
 .prompt-text {
   display: inline-block;
-  padding: 8px 16px 8px 14px;
-  background: #1a1a2eee;
-  border: 1px solid #00d4aa55;
+  padding: 10px 20px 10px 18px;
+  background: var(--surface-glass);
+  border: 1px solid var(--glow-dim);
   border-right: none;
-  border-radius: 6px 0 0 6px;
-  color: #e0e0e0;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 12px #00000066;
+  border-radius: 10px 0 0 10px;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  line-height: 1.3;
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 4px 24px #00000066,
+    inset 0 1px 0 #ffffff06;
+  position: relative;
+}
+
+/* Glowing left accent edge */
+.prompt-text::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--glow);
+  border-radius: 1px;
+  box-shadow: 0 0 8px var(--glow-mid);
 }
