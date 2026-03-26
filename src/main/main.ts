@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import config from '../../data/config.json' with { type: 'json' };
@@ -8,6 +8,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');
 
 const promptArr = Object.values(prompts);
+
+let timerId: NodeJS.Timeout;
+let timerRunning = true;
 
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]!;
@@ -23,13 +26,13 @@ function handleSetPrompt(win: BrowserWindow) {
       config.idle_min_ms
   );
 
-  setTimeout(() => {
+  timerId = setTimeout(() => {
     win.webContents.send('state-change', {
       state: 'active',
       prompt: getRandomPrompt(),
     });
 
-    setTimeout(() => {
+    timerId = setTimeout(() => {
       win.webContents.send('state-change', {
         state: 'cooldown',
       });
@@ -67,6 +70,17 @@ const createWindow = () => {
 app.whenReady().then(() => {
   const win = createWindow();
 
+  globalShortcut.register('CommandOrControl+Shift+M', () => {
+    if (timerRunning) {
+      clearTimeout(timerId);
+      win.webContents.send('state-change', { state: 'idle' });
+      timerRunning = false;
+    } else {
+      handleSetPrompt(win);
+      timerRunning = true;
+    }
+  });
+
   handleSetPrompt(win);
 
   app.on('activate', () => {
@@ -75,6 +89,7 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+  globalShortcut.unregisterAll();
   if (process.platform !== 'darwin') {
     app.quit();
   }
