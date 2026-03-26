@@ -1,10 +1,11 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import config from './config.json' with { type: 'json' };
-import prompts from './prompts.json' with { type: 'json' };
+import config from '../../data/config.json' with { type: 'json' };
+import prompts from '../../data/prompts.json' with { type: 'json' };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rootDir = path.resolve(__dirname, '..', '..');
 
 const promptArr = Object.values(prompts);
 
@@ -46,14 +47,14 @@ const createWindow = () => {
     hasShadow: false,
     movable: true,
     webPreferences: {
-      preload: path.join(__dirname, '..', 'preload.js'),
+      preload: path.join(rootDir, 'dist', 'preload', 'preload.js'),
     },
   });
 
   win.setAlwaysOnTop(true, 'floating');
   // win.setIgnoreMouseEvents(true);
 
-  win.loadFile('index.html');
+  win.loadFile(path.join(rootDir, 'src', 'renderer', 'index.html'));
   // win.webContents.openDevTools();
 
   return win;

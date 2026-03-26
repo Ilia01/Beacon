@@ -1,7 +1,9 @@
-import type { IpcRendererEvent } from 'electron';
-import type { StateChangeEvent } from './types.js';
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
 
-import { contextBridge, ipcRenderer } from 'electron';
+type StateChangeEvent =
+  | { state: 'active'; prompt: string }
+  | { state: 'cooldown' }
+  | { state: 'idle' };
 
 contextBridge.exposeInMainWorld('electronAPI', {
   onStateChange: (callback: (data: StateChangeEvent) => void) =>
