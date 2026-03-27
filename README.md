@@ -12,18 +12,19 @@ Designed for players with ADHD or anyone who tunnels on lane and forgets the big
 - State machine cycles: IDLE (dim dot) -> ACTIVE (glow + prompt slides in) -> COOLDOWN (fades out) -> repeat
 - 72 curated prompts across 9 categories: map awareness, wave management, trading, objectives, tab check, macro, vision, reset timing, mental
 - Prompts sourced from challenger coaching concepts (LS, Coach Curtis, NEACE, Broken By Concept)
-- Context-aware prompt selection reads live game state and picks the most relevant category based on 10 priority-ordered signals:
-  1. Player death -> mental reset prompts
-  2. Player kill -> macro follow-up prompts
-  3. Objective taken -> objective prompts
-  4. Baron/dragon upcoming -> objective prep prompts
-  5. CS behind -> wave management prompts
-  6. Gold in recall window -> reset timing prompts
-  7. Sitting on gold -> reset timing prompts
-  8. Level spike (2, 3, 6, 9, 11, 16) -> trading prompts
-  9. Vision check (every 4 min) -> vision prompts
-  10. Tab check (every 3 min) -> tab check prompts
-  11. Fallback -> map awareness prompts
+- Context-aware prompt selection via Riot Live Client API. Reads game state every tick and picks the highest-priority signal:
+
+| Signal                           | Prompt category    |
+| -------------------------------- | ------------------ |
+| Player dead                      | Mental reset       |
+| Got a kill                       | Macro follow-up    |
+| Objective taken                  | Objectives         |
+| Baron/dragon spawning soon       | Objective prep     |
+| CS behind lane opponent          | Wave management    |
+| Gold in recall range             | Reset timing       |
+| Level spike (2, 3, 6, 9, 11, 16) | Trading            |
+| Periodic (3-4 min)               | Vision / tab check |
+| Nothing else firing              | Map awareness      |
 
 ## Setup
 
