@@ -4,8 +4,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const prompt = document.getElementById('prompt-text');
   const coach = document.getElementById('coach');
 
+  const VALID_STATES = new Set(['active', 'cooldown', 'idle']);
+
   window.electronAPI.onStateChange((value) => {
-    coach.className = 'coach ' + value.state;
+    const state = VALID_STATES.has(value.state) ? value.state : 'idle';
+    coach.className = 'coach ' + state;
 
     if (value.state === 'active') {
       prompt.innerText = value.prompt;
