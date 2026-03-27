@@ -1,2 +1,5 @@
 /node_modules
 /dist
+/riotgames.pem
+/gamedata.json
+/current.json
