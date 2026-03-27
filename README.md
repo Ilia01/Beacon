@@ -8,11 +8,9 @@ Designed for players with ADHD or anyone who tunnels on lane and forgets the big
 
 ## How it works
 
-- Electron app with a transparent, always-on-top overlay
-- State machine cycles: IDLE (dim dot) -> ACTIVE (glow + prompt slides in) -> COOLDOWN (fades out) -> repeat
-- 72 curated prompts across 9 categories: map awareness, wave management, trading, objectives, tab check, macro, vision, reset timing, mental
-- Prompts sourced from challenger coaching concepts (LS, Coach Curtis, NEACE, Broken By Concept)
-- Context-aware prompt selection via Riot Live Client API. Reads game state every tick and picks the highest-priority signal:
+Transparent always-on-top Electron overlay. Cycles through IDLE -> ACTIVE -> COOLDOWN on a timer. 72 prompts sourced from challenger coaching concepts (LS, Coach Curtis, NEACE, Broken By Concept).
+
+Reads live game state via Riot Live Client API and picks the highest-priority signal:
 
 | Signal                           | Prompt category    |
 | -------------------------------- | ------------------ |
