@@ -1,10 +1,8 @@
 # Macro Coach
 
-Desktop overlay for League of Legends that prompts you with macro reminders during games. Built with Electron.
+A small always-on-top overlay that reads your live League of Legends game state and nudges you with the right macro reminder at the right time. Designed for players with ADHD or anyone who tunnels on lane and forgets the bigger picture.
 
-Shows a small beacon in the corner of your screen. Every few seconds it lights up and slides in a coaching prompt - things like "Check minimap - who is missing?" or "Dragon spawns in 60 seconds. Push waves and set up vision NOW". Then it fades back out.
-
-Designed for players with ADHD or anyone who tunnels on lane and forgets the bigger picture.
+Inspired by challenger coaching concepts from LS, Coach Curtis, NEACE, and Broken By Concept.
 
 ## How it works
 
