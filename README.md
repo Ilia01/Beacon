@@ -42,25 +42,6 @@ npm start
 > [!NOTE]
 > `server.js` needs `riotgames.pem` (Riot's local API certificate) in the project root. Grab it from [Riot's developer repo](https://static.developer.riotgames.com/docs/lol/riotgames.pem).
 
-## Planned
-
-- [x] Sound beep on active state
-- [x] Toggle on/off with Ctrl+Shift+M
-- [x] Draggable overlay with position persistence
-- [x] Click-through transparent areas
-- [x] Riot Live Client API integration (`127.0.0.1:2999`)
-  - [x] Game state polling via server.js
-  - [x] Context-aware prompt selection based on game events
-  - [x] Gold threshold triggers for recall timing
-  - [x] Death/kill event triggers
-  - [x] Level spike prompts (level 2, 3, 6, 9, 11, 16)
-  - [x] Objective spawn timers (dragon, baron, herald)
-  - [x] CS comparison with lane opponent
-  - [x] Periodic vision and tab check reminders
-- [ ] Spawn server.js as child process (no separate terminal)
-- [ ] Post-game summary
-- [ ] Bind overlay to League client window
-
 ## Stack
 
 - Electron
