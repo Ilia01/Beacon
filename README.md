@@ -34,13 +34,15 @@ npm run build
 npm start
 ```
 
-In a separate terminal, start the game data poller (requires a game to be running):
+> [!WARNING]
+> For now, the game data poller runs separately. Start it in another terminal before launching a game:
+>
+> ```
+> node server.js
+> ```
 
-```
-node server.js
-```
-
-`server.js` needs `riotgames.pem` (Riot's local API certificate) in the project root. You can extract it from the League client directory.
+> [!NOTE]
+> `server.js` needs `riotgames.pem` (Riot's local API certificate) in the project root. Grab it from [Riot's developer repo](https://static.developer.riotgames.com/docs/lol/riotgames.pem).
 
 ## Planned
 
