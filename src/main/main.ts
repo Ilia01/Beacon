@@ -1,36 +1,71 @@
 import { app, BrowserWindow, globalShortcut, ipcMain, screen } from 'electron';
 import Store from 'electron-store';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import config from '../../data/config.json' with { type: 'json' };
 import prompts from '../../data/prompts.json' with { type: 'json' };
-import { type position, type StateChangeEvent } from '../types.js';
+import {
+  type PromptCategory,
+  type Position,
+  type StateChangeEvent,
+} from '../types.js';
+import type { GameSnapshot } from '../riot.types.js';
+import {
+  deriveContext,
+  initialContextState,
+  type ContextState,
+} from './context.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');
 
-const promptArr = Object.values(prompts);
-
 let timerId: NodeJS.Timeout;
 let timerRunning = true;
 
-const store = new Store<position>({
+let contextState: ContextState = { ...initialContextState };
+let lastCategory: PromptCategory | null = null;
+
+const store = new Store<Position>({
   defaults: {
     x: 0,
     y: 0,
   },
 });
 
-function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]!;
-}
-
-function getRandomPrompt() {
-  return pickRandom(pickRandom(promptArr));
+function readCurrentSnapshot(): GameSnapshot | null {
+  try {
+    const raw = fs.readFileSync(path.join(rootDir, 'current.json'), 'utf-8');
+    return JSON.parse(raw) as GameSnapshot;
+  } catch {
+    return null;
+  }
 }
 
 function sendStateChange(win: BrowserWindow, event: StateChangeEvent) {
   win.webContents.send('state-change', event);
+}
+
+function getContextPrompt(): string | null {
+  const snapshot = readCurrentSnapshot();
+  if (!snapshot) {
+    contextState = { ...initialContextState };
+    lastCategory = null;
+    return null;
+  }
+
+  const { result, newState } = deriveContext(snapshot, contextState);
+  contextState = newState;
+
+  if (!result) return null;
+
+  if (result.category === lastCategory) return null;
+
+  const pool = prompts[result.category];
+  if (!pool || pool.length === 0) return null;
+
+  lastCategory = result.category;
+  return pool[Math.floor(Math.random() * pool.length)] ?? null;
 }
 
 function handleSetPrompt(win: BrowserWindow) {
@@ -40,10 +75,16 @@ function handleSetPrompt(win: BrowserWindow) {
   );
 
   timerId = setTimeout(() => {
-    sendStateChange(win, { state: 'active', prompt: getRandomPrompt() });
+    const prompt = getContextPrompt();
+
+    if (prompt) {
+      sendStateChange(win, { state: 'active', prompt });
+    }
 
     timerId = setTimeout(() => {
-      sendStateChange(win, { state: 'cooldown' });
+      if (prompt) {
+        sendStateChange(win, { state: 'cooldown' });
+      }
       handleSetPrompt(win);
     }, config.active_duration_ms);
   }, timeout);
@@ -61,6 +102,9 @@ const createWindow = () => {
     y: store.get('y'),
     webPreferences: {
       preload: path.join(rootDir, 'dist', 'preload', 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
     },
   });
 

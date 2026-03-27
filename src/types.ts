@@ -1,22 +1,13 @@
-export type StateChangeActive = {
-  state: 'active';
-  prompt: string;
-};
+import prompts from '../data/prompts.json' with { type: 'json' };
 
-export type StateChangeCooldown = {
-  state: 'cooldown';
-};
+export type PromptCategory = keyof typeof prompts;
 
-export type StateChangeIdle = {
-  state: 'idle';
-};
-
-export type position = {
+export type Position = {
   x: number;
   y: number;
 };
 
 export type StateChangeEvent =
-  | StateChangeActive
-  | StateChangeCooldown
-  | StateChangeIdle;
+  | { state: 'active'; prompt: string }
+  | { state: 'cooldown' }
+  | { state: 'idle' };
