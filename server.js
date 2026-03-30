@@ -2,8 +2,18 @@ import axios from 'axios';
 import https from 'node:https';
 import fs from 'node:fs';
 
-const cert = fs.readFileSync('riotgames.pem');
-const httpsAgent = new https.Agent({ ca: cert });
+let cert = null;
+let httpsAgent = null;
+
+try {
+  cert = fs.readFileSync('riotgames.pem');
+  httpsAgent = new https.Agent({ ca: cert });
+} catch (error) {
+  console.error(
+    'riotgames.pem not found. Download it from https://static.developer.riotgames.com/docs/lol/riotgames.pem',
+  );
+  process.exit(1);
+}
 
 async function getLiveGameData() {
   try {
