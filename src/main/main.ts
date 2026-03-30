@@ -110,11 +110,6 @@ const createWindow = () => {
 
   win.setAlwaysOnTop(true, 'floating');
 
-  ipcMain.on('set-position', (_event, pos: { dx: number; dy: number }) => {
-    const [currentX, currentY] = win.getPosition() as [number, number];
-    win.setPosition(currentX + pos.dx, currentY + pos.dy);
-  });
-
   setInterval(() => {
     const cursor = screen.getCursorScreenPoint();
     const rect = win.getBounds();
@@ -153,6 +148,11 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   const win = createWindow();
+
+  ipcMain.on('set-position', (_event, pos: { dx: number; dy: number }) => {
+    const [currentX, currentY] = win.getPosition() as [number, number];
+    win.setPosition(currentX + pos.dx, currentY + pos.dy);
+  });
 
   // TODO: captures `win` - will break if window is recreated
   globalShortcut.register('CommandOrControl+Shift+M', () => {
