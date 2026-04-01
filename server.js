@@ -33,14 +33,8 @@ async function getLiveGameData() {
 }
 
 function saveData(newData) {
-  const timeStamp = new Date().toISOString();
-  const line = JSON.stringify({ [timeStamp]: newData }) + '\n';
-
-  fs.appendFileSync('gamedata.json', line);
   fs.writeFileSync('current.json.tmp', JSON.stringify(newData));
   fs.renameSync('current.json.tmp', 'current.json');
-
-  console.log(`[${timeStamp}] - Saved game data`);
 }
 
 async function startPolling() {
