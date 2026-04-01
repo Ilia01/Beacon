@@ -109,6 +109,7 @@ const createWindow = () => {
   });
 
   win.setAlwaysOnTop(true, 'floating');
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   setInterval(() => {
     const cursor = screen.getCursorScreenPoint();
