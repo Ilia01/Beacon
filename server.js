@@ -37,7 +37,8 @@ function saveData(newData) {
   const line = JSON.stringify({ [timeStamp]: newData }) + '\n';
 
   fs.appendFileSync('gamedata.json', line);
-  fs.writeFileSync('current.json', JSON.stringify(newData));
+  fs.writeFileSync('current.json.tmp', JSON.stringify(newData));
+  fs.renameSync('current.json.tmp', 'current.json');
 
   console.log(`[${timeStamp}] - Saved game data`);
 }
