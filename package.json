@@ -1,5 +1,5 @@
 {
-  "name": "macro_coach",
+  "name": "beacon",
   "version": "0.1.0",
   "main": "./dist/main/main.js",
   "type": "module",
@@ -10,9 +10,9 @@
     "test:watch": "vitest"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "Ilia Goginashvili",
+  "license": "MIT",
+  "description": "Context-aware coaching overlay for League of Legends",
   "devDependencies": {
     "@types/node": "^25.5.0",
     "electron": "^41.0.3",
