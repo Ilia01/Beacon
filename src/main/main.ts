@@ -125,7 +125,7 @@ const createWindow = () => {
     } else {
       win.setIgnoreMouseEvents(true);
     }
-  }, 16);
+  }, 100);
 
   win.on('moved', () => {
     const [x, y] = win.getPosition();
