@@ -12,20 +12,73 @@ import {
   initialContextState,
   type ContextState,
 } from './context.js';
+import { canResolve, resolveTemplate } from './templates.js';
+
+const PROMPT_HISTORY_MAX = 20;
+const PROMPT_REPEAT_WINDOW_MS = 300_000; // 5 minutes
+
+type PromptHistoryEntry = {
+  text: string;
+  category: PromptCategory;
+  time: number;
+};
 
 let contextState: ContextState = { ...initialContextState };
-let lastCategory: PromptCategory | null = null;
 let cooldownTimer: NodeJS.Timeout;
 let inCooldown = false;
 let paused = false;
+let promptHistory: PromptHistoryEntry[] = [];
 
 type EngineStatus = 'WAITING_FOR_GAME' | 'ACTIVE';
 let engineStatus: EngineStatus = 'WAITING_FOR_GAME';
 
+export type OutputMode = 'overlay' | 'speech' | 'both';
 export type EngineTransition = 'game-started' | 'game-ended' | null;
 
+const VALID_OUTPUT_MODES = new Set<OutputMode>(['overlay', 'speech', 'both']);
+const configMode = (config as { output_mode?: string }).output_mode;
+let outputMode: OutputMode = VALID_OUTPUT_MODES.has(configMode as OutputMode)
+  ? (configMode as OutputMode)
+  : 'both';
+
+export function getOutputMode(): OutputMode {
+  return outputMode;
+}
+
+export function cycleOutputMode(): OutputMode {
+  const modes: OutputMode[] = ['overlay', 'speech', 'both'];
+  const idx = modes.indexOf(outputMode);
+  outputMode = modes[(idx + 1) % modes.length]!;
+  return outputMode;
+}
+
 function sendStateChange(win: BrowserWindow, event: StateChangeEvent) {
-  win.webContents.send('state-change', event);
+  const mode = outputMode;
+  if (mode === 'overlay' || mode === 'both') {
+    win.webContents.send('state-change', event);
+  }
+  if ((mode === 'speech' || mode === 'both') && event.state === 'active') {
+    win.webContents.send('speak-prompt', event.prompt);
+  }
+}
+
+function wasRecentlyShown(text: string): boolean {
+  const now = Date.now();
+  return promptHistory.some(
+    (entry) =>
+      entry.text === text && now - entry.time < PROMPT_REPEAT_WINDOW_MS,
+  );
+}
+
+function wasCategoryRecentlyUsed(category: PromptCategory): boolean {
+  return promptHistory.length > 0 && promptHistory[0]?.category === category;
+}
+
+function recordPrompt(text: string, category: PromptCategory) {
+  promptHistory.unshift({ text, category, time: Date.now() });
+  if (promptHistory.length > PROMPT_HISTORY_MAX) {
+    promptHistory = promptHistory.slice(0, PROMPT_HISTORY_MAX);
+  }
 }
 
 function pickPrompt(snapshot: GameSnapshot): string | null {
@@ -33,13 +86,21 @@ function pickPrompt(snapshot: GameSnapshot): string | null {
   contextState = newState;
 
   if (!result) return null;
-  if (result.category === lastCategory) return null;
+  if (wasCategoryRecentlyUsed(result.category)) return null;
 
   const pool = prompts[result.category];
   if (!pool || pool.length === 0) return null;
 
-  lastCategory = result.category;
-  return pool[Math.floor(Math.random() * pool.length)] ?? null;
+  const resolved = pool
+    .filter((template) => canResolve(template, result.data))
+    .map((template) => resolveTemplate(template, result.data))
+    .filter((text) => !wasRecentlyShown(text));
+
+  if (resolved.length === 0) return null;
+
+  const picked = resolved[Math.floor(Math.random() * resolved.length)]!;
+  recordPrompt(picked, result.category);
+  return picked;
 }
 
 function evaluate(snapshot: GameSnapshot, win: BrowserWindow) {
@@ -86,7 +147,7 @@ function resetState() {
   paused = false;
   engineStatus = 'WAITING_FOR_GAME';
   contextState = { ...initialContextState };
-  lastCategory = null;
+  promptHistory = [];
 }
 
 export function stopPromptLoop() {

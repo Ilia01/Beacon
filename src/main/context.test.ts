@@ -6,6 +6,48 @@ import {
 } from './context.js';
 import type { GameSnapshot, Player } from '../riot.types.js';
 
+const defaultScores: Player['scores'] = {
+  assists: 0,
+  creepScore: 45,
+  deaths: 0,
+  kills: 0,
+  wardScore: 0,
+};
+
+const defaultRunes: Player['runes'] = {
+  keystone: {
+    displayName: 'Conqueror',
+    id: 8010,
+    rawDescription: '',
+    rawDisplayName: '',
+  },
+  primaryRuneTree: {
+    displayName: 'Precision',
+    id: 8000,
+    rawDescription: '',
+    rawDisplayName: '',
+  },
+  secondaryRuneTree: {
+    displayName: 'Resolve',
+    id: 8400,
+    rawDescription: '',
+    rawDisplayName: '',
+  },
+};
+
+const defaultSpells: Player['summonerSpells'] = {
+  summonerSpellOne: {
+    displayName: 'Flash',
+    rawDescription: '',
+    rawDisplayName: '',
+  },
+  summonerSpellTwo: {
+    displayName: 'Ignite',
+    rawDescription: '',
+    rawDisplayName: '',
+  },
+};
+
 // Base snapshot: 5 min in, normal game state, no events, no triggers
 function makeSnapshot(
   overrides: {
@@ -21,29 +63,152 @@ function makeSnapshot(
   const gameTime = overrides.gameTime ?? 300;
   return {
     activePlayer: {
+      abilities: {
+        Passive: {
+          displayName: 'Passive',
+          id: 'P',
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        Q: {
+          abilityLevel: 1,
+          displayName: 'Q',
+          id: 'Q',
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        W: {
+          abilityLevel: 0,
+          displayName: 'W',
+          id: 'W',
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        E: {
+          abilityLevel: 0,
+          displayName: 'E',
+          id: 'E',
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        R: {
+          abilityLevel: 0,
+          displayName: 'R',
+          id: 'R',
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+      },
+      championStats: {
+        abilityHaste: 0,
+        abilityPower: 0,
+        armor: 30,
+        armorPenetrationFlat: 0,
+        armorPenetrationPercent: 1,
+        attackDamage: 60,
+        attackRange: 175,
+        attackSpeed: 0.65,
+        bonusArmorPenetrationPercent: 1,
+        bonusMagicPenetrationPercent: 1,
+        critChance: 0,
+        critDamage: 200,
+        currentHealth: 700,
+        healShieldPower: 0,
+        healthRegenRate: 1.8,
+        lifeSteal: 0,
+        magicLethality: 0,
+        magicPenetrationFlat: 0,
+        magicPenetrationPercent: 1,
+        magicResist: 32,
+        maxHealth: 700,
+        moveSpeed: 340,
+        omnivamp: 0,
+        physicalLethality: 0,
+        physicalVamp: 0,
+        resourceMax: 400,
+        resourceRegenRate: 1.6,
+        resourceType: 'MANA',
+        resourceValue: 400,
+        spellVamp: 0,
+        tenacity: 5,
+      },
       currentGold: overrides.gold ?? 500,
+      fullRunes: {
+        generalRunes: [],
+        keystone: {
+          displayName: 'Conqueror',
+          id: 8010,
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        primaryRuneTree: {
+          displayName: 'Precision',
+          id: 8000,
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        secondaryRuneTree: {
+          displayName: 'Resolve',
+          id: 8400,
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        statRunes: [],
+      },
       level: overrides.level ?? 1,
       riotId: 'Player#123',
       riotIdGameName: 'Player',
+      riotIdTagLine: '123',
+      summonerName: 'Player#123',
     },
     allPlayers: [
       {
-        riotId: 'Player#123',
-        position: 'MIDDLE',
-        team: 'ORDER',
+        championName: 'Sylas',
+        isBot: false,
         isDead: overrides.isDead ?? false,
-        scores: { creepScore: overrides.creepScore ?? 45 },
+        items: [],
+        level: overrides.level ?? 1,
+        position: 'MIDDLE',
+        respawnTimer: 0,
+        riotId: 'Player#123',
+        riotIdGameName: 'Player',
+        riotIdTagLine: '123',
+        runes: defaultRunes,
+        scores: {
+          ...defaultScores,
+          creepScore: overrides.creepScore ?? 45,
+        },
+        summonerSpells: defaultSpells,
+        team: 'ORDER',
       },
       {
-        riotId: 'Enemy#456',
-        position: 'MIDDLE',
-        team: 'CHAOS',
+        championName: 'Zed',
+        isBot: false,
         isDead: false,
-        scores: { creepScore: overrides.enemyCreepScore ?? 45 },
+        items: [],
+        level: overrides.level ?? 1,
+        position: 'MIDDLE',
+        respawnTimer: 0,
+        riotId: 'Enemy#456',
+        riotIdGameName: 'Enemy',
+        riotIdTagLine: '456',
+        runes: defaultRunes,
+        scores: {
+          ...defaultScores,
+          creepScore: overrides.enemyCreepScore ?? 45,
+        },
+        summonerSpells: defaultSpells,
+        team: 'CHAOS',
       },
     ],
     events: { Events: overrides.events ?? [] },
-    gameData: { gameTime },
+    gameData: {
+      gameMode: 'CLASSIC',
+      gameTime,
+      mapName: 'Map11',
+      mapNumber: 11,
+      mapTerrain: 'Default',
+    },
   };
 }
 

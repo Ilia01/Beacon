@@ -1,23 +1,12 @@
-import type { GameEvent, GameSnapshot, Player } from '../riot.types.js';
+import type { GameEvent, GameSnapshot } from '../riot.types.js';
 import type { PromptCategory } from '../types.js';
-import {
-  CS_THRESHOLD,
-  DRAGON_FIRST_SPAWN_S,
-  DRAGON_RESPAWN_S,
-  BARON_FIRST_SPAWN_S,
-  BARON_RESPAWN_S,
-  GOLD_RECALL_MAX,
-  GOLD_RECALL_MIN,
-  GOLD_SITTING,
-  OBJECTIVE_UPCOMING_WINDOW_S,
-  TAB_CHECK_INTERVAL_S,
-  TRADING_LEVEL_SPIKES,
-  VISION_CHECK_INTERVAL_S,
-} from '../constants.js';
+import { getGamePhase, getCategoryWeight } from './phases.js';
+import { ALL_DETECTORS, type DetectorResult } from './detectors.js';
 
 export type ContextResult = {
   category: PromptCategory;
   reason: string;
+  data: Record<string, string>;
 };
 
 export type ContextState = {
@@ -27,6 +16,8 @@ export type ContextState = {
   lastKnownLevel: number;
   lastDragonKillTime: number;
   lastBaronKillTime: number;
+  lastMyItemIds: number[];
+  lastEnemyItemIds: number[];
 };
 
 export const initialContextState: ContextState = {
@@ -36,6 +27,8 @@ export const initialContextState: ContextState = {
   lastKnownLevel: 1,
   lastDragonKillTime: 0,
   lastBaronKillTime: 0,
+  lastMyItemIds: [],
+  lastEnemyItemIds: [],
 };
 
 function processEvents(
@@ -63,139 +56,6 @@ function processEvents(
   return newEvents;
 }
 
-function checkDeath(me: Player | undefined): ContextResult | null {
-  return me?.isDead ? { category: 'mental', reason: 'player_dead' } : null;
-}
-
-function checkPlayerKill(
-  newEvents: GameEvent[],
-  killerName: string,
-): ContextResult | null {
-  const kill = newEvents.find(
-    (e) => e.EventName === 'ChampionKill' && e.KillerName === killerName,
-  );
-  return kill ? { category: 'macro', reason: 'player_kill' } : null;
-}
-
-const OBJECTIVE_EVENTS = new Set([
-  'DragonKill',
-  'BaronKill',
-  'RiftHeraldKill',
-  'TurretKilled',
-  'InhibKilled',
-]);
-
-function checkObjectiveTaken(newEvents: GameEvent[]): ContextResult | null {
-  const event = newEvents.find((e) => OBJECTIVE_EVENTS.has(e.EventName));
-  return event ? { category: 'objectives', reason: event.EventName } : null;
-}
-
-function isObjectiveUpcoming(
-  gameTime: number,
-  lastKillTime: number,
-  firstSpawnTime: number,
-  respawnDelay: number,
-): boolean {
-  const nextSpawn =
-    lastKillTime === 0 ? firstSpawnTime : lastKillTime + respawnDelay;
-  return (
-    gameTime >= nextSpawn - OBJECTIVE_UPCOMING_WINDOW_S &&
-    gameTime < nextSpawn - 10
-  );
-}
-
-function checkObjectiveUpcoming(
-  gameTime: number,
-  state: ContextState,
-): ContextResult | null {
-  if (
-    isObjectiveUpcoming(
-      gameTime,
-      state.lastBaronKillTime,
-      BARON_FIRST_SPAWN_S,
-      BARON_RESPAWN_S,
-    )
-  ) {
-    return { category: 'objectives', reason: 'baron_upcoming' };
-  }
-  if (
-    isObjectiveUpcoming(
-      gameTime,
-      state.lastDragonKillTime,
-      DRAGON_FIRST_SPAWN_S,
-      DRAGON_RESPAWN_S,
-    )
-  ) {
-    return { category: 'objectives', reason: 'dragon_upcoming' };
-  }
-  return null;
-}
-
-function checkCSBehind(
-  me: Player | undefined,
-  allPlayers: Player[],
-  gameTime: number,
-): ContextResult | null {
-  if (!me) return null;
-
-  const expectedCS = (gameTime / 60) * 10;
-  if (expectedCS <= 20) return null;
-
-  const enemyLaner = allPlayers.find(
-    (p) => p.position === me.position && p.team !== me.team,
-  );
-
-  if (
-    me.scores.creepScore < expectedCS * CS_THRESHOLD &&
-    (!enemyLaner || me.scores.creepScore < enemyLaner.scores.creepScore - 2)
-  ) {
-    return { category: 'wave_management', reason: 'cs_behind' };
-  }
-  return null;
-}
-
-function checkGold(gold: number): ContextResult | null {
-  if (gold >= GOLD_RECALL_MIN && gold <= GOLD_RECALL_MAX) {
-    return { category: 'reset_timing', reason: 'recall_window' };
-  }
-  if (gold >= GOLD_SITTING) {
-    return { category: 'reset_timing', reason: 'sitting_on_gold' };
-  }
-  return null;
-}
-
-function checkLevelSpike(
-  level: number,
-  lastKnownLevel: number,
-): ContextResult | null {
-  if (level > lastKnownLevel && TRADING_LEVEL_SPIKES.includes(level)) {
-    return { category: 'trading', reason: `level_${level}` };
-  }
-  return null;
-}
-
-function checkVision(
-  gameTime: number,
-  newState: ContextState,
-): ContextResult | null {
-  if (gameTime - newState.lastVisionCheckAt >= VISION_CHECK_INTERVAL_S) {
-    newState.lastVisionCheckAt = gameTime;
-    return { category: 'vision', reason: 'periodic' };
-  }
-  return null;
-}
-
-function checkTabCheck(
-  gameTime: number,
-  newState: ContextState,
-): ContextResult | null {
-  if (gameTime - newState.lastTabCheckAt >= TAB_CHECK_INTERVAL_S) {
-    newState.lastTabCheckAt = gameTime;
-    return { category: 'tab_check', reason: 'periodic' };
-  }
-  return null;
-}
-
 export function deriveContext(
   snapshot: GameSnapshot,
   state: ContextState,
@@ -205,23 +65,48 @@ export function deriveContext(
 
   const newState: ContextState = { ...state };
   const me = allPlayers.find((p) => p.riotId === activePlayer.riotId);
+  const enemyLaner = me
+    ? allPlayers.find((p) => p.position === me.position && p.team !== me.team)
+    : undefined;
 
   newState.lastKnownLevel = activePlayer.level;
 
   const newEvents = processEvents(events.Events, state, newState);
+  const phase = getGamePhase(gameTime);
 
-  const result = checkDeath(me) ??
-    checkPlayerKill(newEvents, activePlayer.riotIdGameName) ??
-    checkObjectiveTaken(newEvents) ??
-    checkObjectiveUpcoming(gameTime, state) ??
-    checkCSBehind(me, allPlayers, gameTime) ??
-    checkGold(activePlayer.currentGold) ??
-    checkLevelSpike(activePlayer.level, state.lastKnownLevel) ??
-    checkVision(gameTime, newState) ??
-    checkTabCheck(gameTime, newState) ?? {
-      category: 'map_awareness' as PromptCategory,
-      reason: 'fallback',
+  const input = { snapshot, me, enemyLaner, newEvents, state, newState };
+
+  const results: DetectorResult[] = [];
+  for (const detector of ALL_DETECTORS) {
+    const result = detector(input);
+    if (result) {
+      const weight = getCategoryWeight(phase, result.category);
+      if (weight > 0) {
+        results.push({ ...result, priority: result.priority * weight });
+      }
+    }
+  }
+
+  if (results.length === 0) {
+    return {
+      result: {
+        category: 'map_awareness' as PromptCategory,
+        reason: 'fallback',
+        data: {},
+      },
+      newState,
     };
+  }
 
-  return { result, newState };
+  results.sort((a, b) => b.priority - a.priority);
+  const best = results[0]!;
+
+  return {
+    result: {
+      category: best.category,
+      reason: best.reason,
+      data: best.data,
+    },
+    newState,
+  };
 }

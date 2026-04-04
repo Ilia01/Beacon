@@ -11,6 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Position } from '../types.js';
 import {
+  cycleOutputMode,
   handleServerMessage,
   stopPromptLoop,
   togglePromptLoop,
@@ -137,6 +138,14 @@ app.whenReady().then(() => {
 
   globalShortcut.register('CommandOrControl+Shift+M', () => {
     togglePromptLoop(overlay);
+  });
+
+  globalShortcut.register('CommandOrControl+Shift+S', () => {
+    const mode = cycleOutputMode();
+    overlay.webContents.send('state-change', {
+      state: 'active',
+      prompt: `Output: ${mode}`,
+    });
   });
 
   app.on('before-quit', () => {

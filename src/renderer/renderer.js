@@ -16,6 +16,15 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  window.electronAPI.onSpeakPrompt((text) => {
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.1;
+    utterance.pitch = 1;
+    utterance.volume = 0.8;
+    speechSynthesis.speak(utterance);
+  });
+
   const beacon = document.getElementById('beacon');
 
   let dragging = false;

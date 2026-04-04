@@ -16,6 +16,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('app-status', (_event: IpcRendererEvent, value: AppStatus) =>
       callback(value),
     ),
+  onSpeakPrompt: (callback: (text: string) => void) =>
+    ipcRenderer.on('speak-prompt', (_event: IpcRendererEvent, value: string) =>
+      callback(value),
+    ),
   setPosition: (position: { dx: number; dy: number }) => {
     ipcRenderer.send('set-position', position);
   },
