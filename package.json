@@ -6,8 +6,41 @@
   "scripts": {
     "start": "electron .",
     "build": "rm -rf dist && tsc && tsc -p tsconfig.preload.json",
+    "package": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac",
     "test": "vitest run",
     "test:watch": "vitest"
+  },
+  "build": {
+    "appId": "com.beacon.lol",
+    "productName": "Beacon",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "src/renderer/**/*",
+      "data/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      "riotgames.pem"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ]
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false
+    }
   },
   "keywords": [],
   "author": "Ilia Goginashvili",
@@ -16,6 +49,7 @@
   "devDependencies": {
     "@types/node": "^25.5.0",
     "electron": "^41.0.3",
+    "electron-builder": "^26.8.1",
     "prettier": "^3.8.1",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.2",

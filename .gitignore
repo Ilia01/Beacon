@@ -1,5 +1,6 @@
 /node_modules
 /dist
+/release
 /riotgames.pem
 /gamedata.json
 /current.json
