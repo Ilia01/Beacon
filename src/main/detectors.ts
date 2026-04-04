@@ -87,7 +87,9 @@ export function detectObjectiveTaken(
 }
 
 export function detectTeamfight(input: DetectorInput): DetectorResult | null {
-  const { newEvents, snapshot } = input;
+  const { newEvents, snapshot, me } = input;
+  if (!me) return null;
+
   const gameTime = snapshot.gameData.gameTime;
   const recentKills = newEvents.filter(
     (e) => e.EventName === 'ChampionKill' && gameTime - e.EventTime < 10,
@@ -98,7 +100,7 @@ export function detectTeamfight(input: DetectorInput): DetectorResult | null {
     const killer = snapshot.allPlayers.find(
       (p) => p.riotIdGameName === e.KillerName,
     );
-    return killer && killer.team === (input.me?.team ?? 'ORDER');
+    return killer && killer.team === me.team;
   }).length;
 
   const won = myTeamKills > recentKills.length - myTeamKills;
