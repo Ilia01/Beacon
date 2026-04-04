@@ -25,6 +25,7 @@
       "data/**/*",
       "assets/**/*"
     ],
+    "icon": "assets/icon.png",
     "extraResources": [
       "riotgames.pem"
     ],
