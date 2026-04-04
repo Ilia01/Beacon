@@ -1,12 +1,21 @@
 import axios from 'axios';
 import https from 'node:https';
 import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let cert = null;
 let httpsAgent = null;
 
+if (!process.parentPort) {
+  console.error('server.js must be spawned via Electron utilityProcess.fork()');
+  process.exit(1);
+}
+
 try {
-  cert = fs.readFileSync('riotgames.pem');
+  cert = fs.readFileSync(path.join(__dirname, 'riotgames.pem'));
   httpsAgent = new https.Agent({ ca: cert });
 } catch (error) {
   console.error(
@@ -17,32 +26,29 @@ try {
 
 async function getLiveGameData() {
   try {
-    const response = await axios.get(
+    const { data } = await axios.get(
       'https://127.0.0.1:2999/liveclientdata/allgamedata',
       { httpsAgent, timeout: 1000 },
     );
-    saveData(response.data);
-    return true;
+    return { success: true, data };
   } catch (error) {
-    if (fs.existsSync('current.json')) {
-      fs.unlinkSync('current.json');
-    }
-    console.log(error instanceof Error ? error.message : 'Unknown error');
-    return false;
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 }
 
-function saveData(newData) {
-  fs.writeFileSync('current.json.tmp', JSON.stringify(newData));
-  fs.renameSync('current.json.tmp', 'current.json');
-}
-
 async function startPolling() {
-  const success = await getLiveGameData();
+  const result = await getLiveGameData();
 
-  const nextDelay = success ? 1000 : 6000;
+  const nextDelay = result.success ? 1000 : 6000;
 
-  if (!success) console.log('Game not found, retrying in 6s...');
+  const msg = result.success
+    ? { type: 'DATA', payload: result.data }
+    : { type: 'FETCH_ERROR', reason: result.error };
+
+  process.parentPort.postMessage(msg);
 
   setTimeout(startPolling, nextDelay);
 }

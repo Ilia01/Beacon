@@ -1,30 +1,23 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, screen } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  globalShortcut,
+  ipcMain,
+  screen,
+  utilityProcess,
+} from 'electron';
 import Store from 'electron-store';
-import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import config from '../../data/config.json' with { type: 'json' };
-import prompts from '../../data/prompts.json' with { type: 'json' };
+import type { Position } from '../types.js';
 import {
-  type PromptCategory,
-  type Position,
-  type StateChangeEvent,
-} from '../types.js';
-import type { GameSnapshot } from '../riot.types.js';
-import {
-  deriveContext,
-  initialContextState,
-  type ContextState,
-} from './context.js';
+  handleServerMessage,
+  stopPromptLoop,
+  togglePromptLoop,
+} from './prompts.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');
-
-let timerId: NodeJS.Timeout;
-let timerRunning = true;
-
-let contextState: ContextState = { ...initialContextState };
-let lastCategory: PromptCategory | null = null;
 
 const store = new Store<Position>({
   defaults: {
@@ -32,63 +25,6 @@ const store = new Store<Position>({
     y: 0,
   },
 });
-
-function readCurrentSnapshot(): GameSnapshot | null {
-  try {
-    const raw = fs.readFileSync(path.join(rootDir, 'current.json'), 'utf-8');
-    return JSON.parse(raw) as GameSnapshot;
-  } catch {
-    return null;
-  }
-}
-
-function sendStateChange(win: BrowserWindow, event: StateChangeEvent) {
-  win.webContents.send('state-change', event);
-}
-
-function getContextPrompt(): string | null {
-  const snapshot = readCurrentSnapshot();
-  if (!snapshot) {
-    contextState = { ...initialContextState };
-    lastCategory = null;
-    return null;
-  }
-
-  const { result, newState } = deriveContext(snapshot, contextState);
-  contextState = newState;
-
-  if (!result) return null;
-
-  if (result.category === lastCategory) return null;
-
-  const pool = prompts[result.category];
-  if (!pool || pool.length === 0) return null;
-
-  lastCategory = result.category;
-  return pool[Math.floor(Math.random() * pool.length)] ?? null;
-}
-
-function handleSetPrompt(win: BrowserWindow) {
-  const timeout = Math.floor(
-    Math.random() * (config.idle_max_ms - config.idle_min_ms) +
-      config.idle_min_ms,
-  );
-
-  timerId = setTimeout(() => {
-    const prompt = getContextPrompt();
-
-    if (prompt) {
-      sendStateChange(win, { state: 'active', prompt });
-    }
-
-    timerId = setTimeout(() => {
-      if (prompt) {
-        sendStateChange(win, { state: 'cooldown' });
-      }
-      handleSetPrompt(win);
-    }, config.active_duration_ms);
-  }, timeout);
-}
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -148,29 +84,34 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
-  const win = createWindow();
+  let win = createWindow();
+  const server = utilityProcess.fork(path.join(rootDir, 'server.js'));
 
   ipcMain.on('set-position', (_event, pos: { dx: number; dy: number }) => {
     const [currentX, currentY] = win.getPosition() as [number, number];
     win.setPosition(currentX + pos.dx, currentY + pos.dy);
   });
 
-  // TODO: captures `win` - will break if window is recreated
-  globalShortcut.register('CommandOrControl+Shift+M', () => {
-    if (timerRunning) {
-      clearTimeout(timerId);
-      sendStateChange(win, { state: 'idle' });
-      timerRunning = false;
-    } else {
-      handleSetPrompt(win);
-      timerRunning = true;
-    }
+  server.on('message', (response) => {
+    handleServerMessage(response, win);
   });
 
-  handleSetPrompt(win);
+  server.on('exit', () => {
+    stopPromptLoop();
+  });
+
+  globalShortcut.register('CommandOrControl+Shift+M', () => {
+    togglePromptLoop(win);
+  });
+
+  app.on('before-quit', () => {
+    server.kill();
+  });
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      win = createWindow();
+    }
   });
 });
 
