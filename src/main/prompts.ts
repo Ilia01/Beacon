@@ -27,10 +27,7 @@ export function handleServerMessage(
   win: BrowserWindow,
 ) {
   if (response.type === 'FETCH_ERROR') {
-    engineStatus = 'WAITING_FOR_GAME';
-    latestSnapshot = null;
-    contextState = { ...initialContextState };
-    lastCategory = null;
+    stopPromptLoop();
     return;
   }
 
@@ -92,6 +89,15 @@ export function startPromptLoop(win: BrowserWindow) {
   if (timerRunning) return;
   timerRunning = true;
   scheduleNext(win);
+}
+
+export function stopPromptLoop() {
+  clearTimeout(timerId);
+  timerRunning = false;
+  engineStatus = 'WAITING_FOR_GAME';
+  latestSnapshot = null;
+  contextState = { ...initialContextState };
+  lastCategory = null;
 }
 
 export function togglePromptLoop(win: BrowserWindow) {

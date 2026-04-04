@@ -1,6 +1,10 @@
 import axios from 'axios';
 import https from 'node:https';
 import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let cert = null;
 let httpsAgent = null;
@@ -11,7 +15,7 @@ if (!process.parentPort) {
 }
 
 try {
-  cert = fs.readFileSync('riotgames.pem');
+  cert = fs.readFileSync(path.join(__dirname, 'riotgames.pem'));
   httpsAgent = new https.Agent({ ca: cert });
 } catch (error) {
   console.error(

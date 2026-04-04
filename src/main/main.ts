@@ -10,7 +10,11 @@ import Store from 'electron-store';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Position } from '../types.js';
-import { handleServerMessage, togglePromptLoop } from './prompts.js';
+import {
+  handleServerMessage,
+  stopPromptLoop,
+  togglePromptLoop,
+} from './prompts.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');
@@ -80,7 +84,7 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
-  const win = createWindow();
+  let win = createWindow();
   const server = utilityProcess.fork(path.join(rootDir, 'server.js'));
 
   ipcMain.on('set-position', (_event, pos: { dx: number; dy: number }) => {
@@ -92,6 +96,10 @@ app.whenReady().then(() => {
     handleServerMessage(response, win);
   });
 
+  server.on('exit', () => {
+    stopPromptLoop();
+  });
+
   globalShortcut.register('CommandOrControl+Shift+M', () => {
     togglePromptLoop(win);
   });
@@ -101,7 +109,9 @@ app.whenReady().then(() => {
   });
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      win = createWindow();
+    }
   });
 });
 
