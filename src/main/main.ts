@@ -18,6 +18,7 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');
+const preloadPath = path.join(rootDir, 'dist', 'preload', 'preload.js');
 
 const store = new Store<Position>({
   defaults: {
@@ -26,7 +27,31 @@ const store = new Store<Position>({
   },
 });
 
-const createWindow = () => {
+const createHubWindow = () => {
+  const win = new BrowserWindow({
+    width: 380,
+    height: 320,
+    frame: false,
+    resizable: false,
+    transparent: true,
+    hasShadow: true,
+    center: true,
+    webPreferences: {
+      preload: preloadPath,
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  win.setVisibleOnAllWorkspaces(true);
+
+  win.loadFile(path.join(rootDir, 'src', 'renderer', 'hub.html'));
+
+  return win;
+};
+
+const createOverlayWindow = () => {
   const win = new BrowserWindow({
     width: 600,
     height: 60,
@@ -34,17 +59,19 @@ const createWindow = () => {
     resizable: false,
     transparent: true,
     hasShadow: false,
+    show: false,
     x: store.get('x'),
     y: store.get('y'),
     webPreferences: {
-      preload: path.join(rootDir, 'dist', 'preload', 'preload.js'),
+      preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
     },
   });
 
-  win.setAlwaysOnTop(true, 'floating');
+  win.setAlwaysOnTop(true, 'screen-saver');
+
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   setInterval(() => {
@@ -72,36 +99,44 @@ const createWindow = () => {
 
   win.loadFile(path.join(rootDir, 'src', 'renderer', 'index.html'));
 
-  if (!app.isPackaged) {
-    const width = 1280;
-    const height = 600;
-
-    win.webContents.openDevTools();
-    win.setSize(width, height);
-  }
-
   return win;
 };
 
 app.whenReady().then(() => {
-  let win = createWindow();
+  let hub = createHubWindow();
+  let overlay = createOverlayWindow();
   const server = utilityProcess.fork(path.join(__dirname, 'server.js'));
 
   ipcMain.on('set-position', (_event, pos: { dx: number; dy: number }) => {
-    const [currentX, currentY] = win.getPosition() as [number, number];
-    win.setPosition(currentX + pos.dx, currentY + pos.dy);
+    const [currentX, currentY] = overlay.getPosition() as [number, number];
+    overlay.setPosition(currentX + pos.dx, currentY + pos.dy);
   });
 
   server.on('message', (response) => {
-    handleServerMessage(response, win);
+    const transition = handleServerMessage(response, overlay);
+
+    if (transition === 'game-started') {
+      hub.webContents.send('app-status', { status: 'connected' });
+      hub.hide();
+      overlay.setAlwaysOnTop(true, 'screen-saver');
+      overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+      overlay.show();
+    } else if (transition === 'game-ended') {
+      overlay.hide();
+      hub.show();
+      hub.webContents.send('app-status', { status: 'waiting' });
+    }
   });
 
   server.on('exit', () => {
     stopPromptLoop();
+    overlay.hide();
+    hub.show();
+    hub.webContents.send('app-status', { status: 'waiting' });
   });
 
   globalShortcut.register('CommandOrControl+Shift+M', () => {
-    togglePromptLoop(win);
+    togglePromptLoop(overlay);
   });
 
   app.on('before-quit', () => {
@@ -110,7 +145,8 @@ app.whenReady().then(() => {
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      win = createWindow();
+      hub = createHubWindow();
+      overlay = createOverlayWindow();
     }
   });
 });

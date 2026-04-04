@@ -15,38 +15,21 @@ import {
 
 let contextState: ContextState = { ...initialContextState };
 let lastCategory: PromptCategory | null = null;
-let timerId: NodeJS.Timeout;
-let timerRunning = false;
-let latestSnapshot: GameSnapshot | null = null;
+let cooldownTimer: NodeJS.Timeout;
+let inCooldown = false;
+let paused = false;
 
-type EngineStatus = 'WAITING_FOR_GAME' | 'ACTIVE' | 'COOLDOWN';
+type EngineStatus = 'WAITING_FOR_GAME' | 'ACTIVE';
 let engineStatus: EngineStatus = 'WAITING_FOR_GAME';
 
-export function handleServerMessage(
-  response: ServerMessage,
-  win: BrowserWindow,
-) {
-  if (response.type === 'FETCH_ERROR') {
-    stopPromptLoop();
-    return;
-  }
+export type EngineTransition = 'game-started' | 'game-ended' | null;
 
-  latestSnapshot = response.payload;
-
-  if (engineStatus === 'WAITING_FOR_GAME') {
-    engineStatus = 'ACTIVE';
-    startPromptLoop(win);
-  }
+function sendStateChange(win: BrowserWindow, event: StateChangeEvent) {
+  win.webContents.send('state-change', event);
 }
 
-function pickPrompt(): string | null {
-  if (!latestSnapshot) {
-    contextState = { ...initialContextState };
-    lastCategory = null;
-    return null;
-  }
-
-  const { result, newState } = deriveContext(latestSnapshot, contextState);
+function pickPrompt(snapshot: GameSnapshot): string | null {
+  const { result, newState } = deriveContext(snapshot, contextState);
   contextState = newState;
 
   if (!result) return null;
@@ -59,53 +42,64 @@ function pickPrompt(): string | null {
   return pool[Math.floor(Math.random() * pool.length)] ?? null;
 }
 
-function sendStateChange(win: BrowserWindow, event: StateChangeEvent) {
-  win.webContents.send('state-change', event);
+function evaluate(snapshot: GameSnapshot, win: BrowserWindow) {
+  if (paused || inCooldown) return;
+
+  const prompt = pickPrompt(snapshot);
+  if (!prompt) return;
+
+  sendStateChange(win, { state: 'active', prompt });
+  inCooldown = true;
+
+  cooldownTimer = setTimeout(() => {
+    sendStateChange(win, { state: 'cooldown' });
+
+    cooldownTimer = setTimeout(() => {
+      inCooldown = false;
+    }, config.cooldown_ms);
+  }, config.active_duration_ms);
 }
 
-function scheduleNext(win: BrowserWindow) {
-  const timeout = Math.floor(
-    Math.random() * (config.idle_max_ms - config.idle_min_ms) +
-      config.idle_min_ms,
-  );
+export function handleServerMessage(
+  response: ServerMessage,
+  win: BrowserWindow,
+): EngineTransition {
+  if (response.type === 'FETCH_ERROR') {
+    const wasActive = engineStatus === 'ACTIVE';
+    resetState();
+    return wasActive ? 'game-ended' : null;
+  }
 
-  timerId = setTimeout(() => {
-    const prompt = pickPrompt();
+  if (engineStatus === 'WAITING_FOR_GAME') {
+    engineStatus = 'ACTIVE';
+    evaluate(response.payload, win);
+    return 'game-started';
+  }
 
-    if (prompt) {
-      sendStateChange(win, { state: 'active', prompt });
-    }
-
-    timerId = setTimeout(() => {
-      if (prompt) {
-        sendStateChange(win, { state: 'cooldown' });
-      }
-      scheduleNext(win);
-    }, config.active_duration_ms);
-  }, timeout);
+  evaluate(response.payload, win);
+  return null;
 }
 
-export function startPromptLoop(win: BrowserWindow) {
-  if (timerRunning) return;
-  timerRunning = true;
-  scheduleNext(win);
-}
-
-export function stopPromptLoop() {
-  clearTimeout(timerId);
-  timerRunning = false;
+function resetState() {
+  clearTimeout(cooldownTimer);
+  inCooldown = false;
+  paused = false;
   engineStatus = 'WAITING_FOR_GAME';
-  latestSnapshot = null;
   contextState = { ...initialContextState };
   lastCategory = null;
 }
 
+export function stopPromptLoop() {
+  resetState();
+}
+
 export function togglePromptLoop(win: BrowserWindow) {
-  if (timerRunning) {
-    clearTimeout(timerId);
-    sendStateChange(win, { state: 'idle' });
-    timerRunning = false;
+  if (paused) {
+    paused = false;
   } else {
-    startPromptLoop(win);
+    clearTimeout(cooldownTimer);
+    inCooldown = false;
+    sendStateChange(win, { state: 'idle' });
+    paused = true;
   }
 }
