@@ -15,7 +15,29 @@ if (!process.parentPort) {
 
 const { parentPort } = process;
 
-const cert = fs.readFileSync(path.join(rootDir, 'riotgames.pem'));
+const pemPaths = [
+  path.join(process.resourcesPath, 'riotgames.pem'),
+  path.join(rootDir, 'riotgames.pem'),
+];
+
+let cert: Buffer | undefined;
+for (const p of pemPaths) {
+  try {
+    cert = fs.readFileSync(p);
+    break;
+  } catch {
+    continue;
+  }
+}
+
+if (!cert) {
+  parentPort.postMessage({
+    type: 'FETCH_ERROR',
+    reason: 'riotgames.pem not found',
+  } satisfies ServerMessage);
+  process.exit(1);
+}
+
 const httpsAgent = new https.Agent({ ca: cert });
 
 async function getLiveGameData(): Promise<ServerMessage> {
