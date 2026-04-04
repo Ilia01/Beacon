@@ -1,6 +1,10 @@
 import type { BrowserWindow } from 'electron';
 import type { GameSnapshot } from '../riot.types.js';
-import type { PromptCategory, StateChangeEvent } from '../types.js';
+import type {
+  PromptCategory,
+  ServerMessage,
+  StateChangeEvent,
+} from '../types.js';
 import config from '../../data/config.json' with { type: 'json' };
 import prompts from '../../data/prompts.json' with { type: 'json' };
 import {
@@ -17,10 +21,6 @@ let latestSnapshot: GameSnapshot | null = null;
 
 type EngineStatus = 'WAITING_FOR_GAME' | 'ACTIVE' | 'COOLDOWN';
 let engineStatus: EngineStatus = 'WAITING_FOR_GAME';
-
-type ServerMessage =
-  | { type: 'DATA'; payload: GameSnapshot }
-  | { type: 'FETCH_ERROR'; reason: string };
 
 export function handleServerMessage(
   response: ServerMessage,

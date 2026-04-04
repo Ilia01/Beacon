@@ -85,7 +85,7 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   let win = createWindow();
-  const server = utilityProcess.fork(path.join(rootDir, 'server.js'));
+  const server = utilityProcess.fork(path.join(__dirname, 'server.js'));
 
   ipcMain.on('set-position', (_event, pos: { dx: number; dy: number }) => {
     const [currentX, currentY] = win.getPosition() as [number, number];
