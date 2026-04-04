@@ -11,3 +11,7 @@ export type StateChangeEvent =
   | { state: 'active'; prompt: string }
   | { state: 'cooldown' }
   | { state: 'idle' };
+
+export type ServerMessage =
+  | { type: 'DATA'; payload: import('./riot.types.js').GameSnapshot }
+  | { type: 'FETCH_ERROR'; reason: string };
