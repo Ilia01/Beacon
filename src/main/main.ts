@@ -118,8 +118,6 @@ app.whenReady().then(() => {
     if (transition === 'game-started') {
       hub.webContents.send('app-status', { status: 'connected' });
       hub.hide();
-      overlay.setAlwaysOnTop(true, 'screen-saver');
-      overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
       overlay.show();
     } else if (transition === 'game-ended') {
       overlay.hide();
