@@ -1,44 +1,41 @@
 {
   "map_awareness": [
     "Where is the enemy jungler right now?",
-    "Check minimap - who is missing?",
+    "Check minimap -- who is missing?",
     "Which lanes have priority?",
-    "Is anyone walking through river?",
     "How many enemies are visible on the map right now?",
     "Where would you gank if you were their jungler?",
-    "Enemy jungler started bot side - they're topside now. Watch out",
     "You haven't checked minimap in a while. Glance now",
-    "Which enemies have been off-map longest? Danger zone",
+    "Which enemies have been off-map longest?",
     "Can you predict the next gank? Where's the pressure?"
   ],
   "wave_management": [
-    "Is your wave pushing or pulling?",
+    "You're at {my_cs} CS -- expected around {expected_cs}. Focus on last hits",
+    "You're {my_cs} CS vs their {enemy_cs}. Close the gap",
     "Freeze, slow push, or shove? Pick one and commit",
     "Will this wave crash into tower before the next objective?",
     "Can you build a slow push for a dive or roam?",
-    "Is a cannon wave coming? Plan around it",
-    "Check sidelanes - are waves being caught?",
-    "Crash this wave before you recall. Don't waste the push",
-    "Can you set up a 3-wave slow push for the next objective?",
-    "Waves will arrive at tower every 30 seconds. Time your rotation"
+    "Check sidelanes -- are waves being caught?",
+    "Crash this wave before you recall",
+    "Can you set up a 3-wave slow push for the next objective?"
   ],
   "trading": [
+    "You just finished {item}. Look for a trade",
+    "{enemy} just completed {item}. Respect their spike",
+    "You hit level {level} -- you have the advantage. Trade now",
     "What cooldowns does your opponent have up?",
     "Do you have a level or item advantage right now?",
     "Where are the enemy minions? Don't trade in their wave",
     "Can you punish them for last hitting?",
-    "What's your win condition in this lane?",
-    "Are your summoner spells up? Are theirs?",
-    "Level 2 spike: first wave + 3 melee. Be ready"
+    "Are your summoner spells up? Are theirs?"
   ],
   "objectives": [
-    "Dragon spawns in 60 seconds. Push waves and set up vision NOW",
-    "Baron is coming up. Ping your team and start positioning",
+    "Dragon in {time_until}s. Push waves and set up vision NOW",
+    "Baron in {time_until}s. Ping your team and start positioning",
     "Are you going to contest this objective or trade across the map?",
     "Does the enemy have smite advantage?",
     "Rift Herald is up. Can your jungler take it?",
     "What's the dragon soul state? How many does each team have?",
-    "Is elder dragon coming? This decides the game",
     "Don't start baron without pushed waves. Check sidelanes first",
     "Can you take a tower instead of contesting this objective?"
   ],
@@ -48,42 +45,42 @@
     "Tab: check enemy summoner spell timers",
     "Tab: who is the biggest threat right now?",
     "Tab: does anyone have stopwatch or zhonyas?",
-    "Tab: compare CS numbers - are you ahead or behind?",
+    "Tab: compare CS numbers -- are you ahead or behind?",
     "Tab: who on their team is behind? Punish them",
     "Tab: check death timers. Can you force something?"
   ],
   "macro": [
+    "{dead_enemy} is dead for {respawn_timer}s. Push or take an objective",
+    "{dead_count} enemies are dead. What can you take right now?",
+    "You're {kills}/{deaths} -- press your lead. Force fights on your terms",
+    "You just won the teamfight ({our_kills} for {total_kills}). Take an objective NOW",
+    "Teamfight lost. Regroup, don't trickle in",
+    "You killed {victim}. What do you take? Tower? Dragon? Vision?",
     "What is your team's win condition this game?",
     "Should you be grouping or splitting right now?",
     "Which side of the map should you be playing around?",
-    "Can you take a tower if you push this wave?",
-    "Is this fight worth taking or should you give and take elsewhere?",
-    "Is the enemy comp better at teamfighting or picking? Play accordingly",
-    "Are you playing to your champion's strengths or the enemy's?",
-    "You just got a kill. What do you take? Tower? Dragon? Vision?",
-    "Don't fight without a reason. What do you gain if you win this?",
-    "Play towards your power spike. When do you hit your strongest point?"
+    "Don't fight without a reason. What do you gain if you win this?"
   ],
   "vision": [
     "Do you have vision on the objective? Place wards 60 seconds early",
     "Your ward is about to expire. Re-ward before it goes dark",
     "Sweep before your team walks into that brush",
     "Control ward the objective pit. Deny their vision",
-    "River is dark. Respect the fog - don't facecheck",
+    "River is dark. Respect the fog -- don't facecheck",
     "Where are their wards? Think about what they can see"
   ],
   "reset_timing": [
-    "You have enough gold for your next item. Crash and recall",
+    "You have {gold}g. That's enough for your next component -- crash and recall",
+    "You're sitting on {gold}g! Stop fighting and go spend it",
+    "You're at {hp_percent}% HP. Back off and reset before you give a free kill",
     "Objective spawns soon. Reset now so you're full HP",
-    "Don't overstay. You're low with no sums - back off and reset",
-    "Can you cheater recall? Crash wave 3 and back for free",
-    "You just won a fight. Don't greed - recall and spend your gold",
-    "Wave is pushing to you. Stay and catch it, then base"
+    "Don't overstay. You're low with no sums -- back off and reset",
+    "You just won a fight. Don't greed -- recall and spend your gold"
   ],
   "mental": [
     "Take a breath. Reset your focus",
     "Stop thinking about the last death. What's the play NOW?",
-    "Are you tilted? If yes, play safe for 2 minutes",
+    "You're 0/{deaths} -- play safe, farm under tower, scale. You'll be useful later",
     "Focus on what you can control, not your teammates",
     "One good play can flip this game. Stay sharp",
     "You died. That's fine. What went wrong and what's next?",
