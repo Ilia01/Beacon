@@ -107,6 +107,8 @@ app.whenReady().then(() => {
   let overlay = createOverlayWindow();
   const server = utilityProcess.fork(path.join(__dirname, 'server.js'));
 
+  ipcMain.handle('get-version', () => app.getVersion());
+
   ipcMain.on('set-position', (_event, pos: { dx: number; dy: number }) => {
     const [currentX, currentY] = overlay.getPosition() as [number, number];
     overlay.setPosition(currentX + pos.dx, currentY + pos.dy);
