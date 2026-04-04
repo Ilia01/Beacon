@@ -157,56 +157,65 @@ export function detectEnemyDeathWindow(
   };
 }
 
+function getRealItems(player: Player): Player['items'] {
+  return player.items.filter((i) => !i.consumable && i.itemID !== 3340);
+}
+
+function findNewItemName(
+  current: Player['items'],
+  prevIds: number[],
+): string | null {
+  const prevSet = new Set(prevIds);
+  const newItem = current.find((i) => !prevSet.has(i.itemID));
+  return newItem?.displayName ?? null;
+}
+
 export function detectItemCompleted(
   input: DetectorInput,
 ): DetectorResult | null {
   const { me, enemyLaner, state, newState } = input;
   if (!me) return null;
 
-  const myItemCount = me.items.filter(
-    (i) => !i.consumable && i.itemID !== 3340,
-  ).length;
-  const prevMyItems = state.lastMyItemCount;
+  const myItems = getRealItems(me);
+  const myItemIds = myItems.map((i) => i.itemID);
+  newState.lastMyItemIds = myItemIds;
 
-  newState.lastMyItemCount = myItemCount;
-
-  if (myItemCount > prevMyItems && prevMyItems > 0) {
-    return {
-      category: 'trading',
-      reason: 'item_completed',
-      priority: 65,
-      data: {
-        item:
-          me.items
-            .filter((i) => !i.consumable && i.itemID !== 3340)
-            .map((i) => i.displayName)
-            .pop() ?? 'an item',
-      },
-    };
+  if (
+    state.lastMyItemIds.length > 0 &&
+    myItemIds.length > state.lastMyItemIds.length
+  ) {
+    const itemName = findNewItemName(myItems, state.lastMyItemIds);
+    if (itemName) {
+      return {
+        category: 'trading',
+        reason: 'item_completed',
+        priority: 65,
+        data: { item: itemName },
+      };
+    }
   }
 
   if (!enemyLaner) return null;
-  const enemyItemCount = enemyLaner.items.filter(
-    (i) => !i.consumable && i.itemID !== 3340,
-  ).length;
-  const prevEnemyItems = state.lastEnemyItemCount;
+  const enemyItems = getRealItems(enemyLaner);
+  const enemyItemIds = enemyItems.map((i) => i.itemID);
+  newState.lastEnemyItemIds = enemyItemIds;
 
-  newState.lastEnemyItemCount = enemyItemCount;
-
-  if (enemyItemCount > prevEnemyItems && prevEnemyItems > 0) {
-    return {
-      category: 'trading',
-      reason: 'enemy_item_completed',
-      priority: 70,
-      data: {
-        enemy: enemyLaner.championName,
-        item:
-          enemyLaner.items
-            .filter((i) => !i.consumable && i.itemID !== 3340)
-            .map((i) => i.displayName)
-            .pop() ?? 'an item',
-      },
-    };
+  if (
+    state.lastEnemyItemIds.length > 0 &&
+    enemyItemIds.length > state.lastEnemyItemIds.length
+  ) {
+    const itemName = findNewItemName(enemyItems, state.lastEnemyItemIds);
+    if (itemName) {
+      return {
+        category: 'trading',
+        reason: 'enemy_item_completed',
+        priority: 70,
+        data: {
+          enemy: enemyLaner.championName,
+          item: itemName,
+        },
+      };
+    }
   }
 
   return null;
@@ -222,7 +231,7 @@ export function detectKdaAdaptive(input: DetectorInput): DetectorResult | null {
       category: 'mental',
       reason: 'feeding',
       priority: 60,
-      data: { deaths: String(deaths) },
+      data: { kills: String(kills), deaths: String(deaths) },
     };
   }
   if (kills >= 3 && deaths <= 1) {
@@ -230,7 +239,7 @@ export function detectKdaAdaptive(input: DetectorInput): DetectorResult | null {
       category: 'macro',
       reason: 'fed',
       priority: 55,
-      data: { kills: String(kills) },
+      data: { kills: String(kills), deaths: String(deaths) },
     };
   }
   return null;
@@ -308,7 +317,9 @@ export function detectCsBehind(input: DetectorInput): DetectorResult | null {
       data: {
         my_cs: String(me.scores.creepScore),
         expected_cs: String(Math.round(expectedCS)),
-        enemy_cs: String(enemyLaner?.scores.creepScore ?? '?'),
+        ...(enemyLaner
+          ? { enemy_cs: String(enemyLaner.scores.creepScore) }
+          : {}),
       },
     };
   }

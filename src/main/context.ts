@@ -16,8 +16,8 @@ export type ContextState = {
   lastKnownLevel: number;
   lastDragonKillTime: number;
   lastBaronKillTime: number;
-  lastMyItemCount: number;
-  lastEnemyItemCount: number;
+  lastMyItemIds: number[];
+  lastEnemyItemIds: number[];
 };
 
 export const initialContextState: ContextState = {
@@ -27,8 +27,8 @@ export const initialContextState: ContextState = {
   lastKnownLevel: 1,
   lastDragonKillTime: 0,
   lastBaronKillTime: 0,
-  lastMyItemCount: 0,
-  lastEnemyItemCount: 0,
+  lastMyItemIds: [],
+  lastEnemyItemIds: [],
 };
 
 function processEvents(
