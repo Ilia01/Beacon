@@ -1,49 +1,82 @@
-# Macro Coach
+# Beacon
 
-A small always-on-top overlay that reads your live League of Legends game state and nudges you with the right macro reminder at the right time. Designed for players with ADHD or anyone who tunnels on lane and forgets the bigger picture.
+A context-aware coaching overlay for League of Legends. Reads your live game state and gives you the right macro reminder at the right time. Designed for players who tunnel on lane and forget the bigger picture.
 
 Inspired by challenger coaching concepts from LS, Coach Curtis, NEACE, and Broken By Concept.
 
 ## How it works
 
-Transparent always-on-top Electron overlay. Cycles through IDLE -> ACTIVE -> COOLDOWN on a timer. 72 prompts sourced from challenger coaching concepts (LS, Coach Curtis, NEACE, Broken By Concept).
+Beacon has two windows: a **hub** that waits for your game to start, and a **transparent overlay** that sits on top of your game. When the Riot client is detected on localhost:2999, the hub disappears and the overlay activates.
 
-Reads live game state via Riot Live Client API and picks the highest-priority signal:
+The prompt engine polls the Riot Live Client API every second. 14 detectors run on each snapshot, scored by priority and multiplied by the current game phase (early laning, mid laning, mid game, late game). The highest-scoring detector picks a template prompt and fills it with live game data: champion names, gold amounts, CS numbers, respawn timers, etc.
 
-| Signal                           | Prompt category    |
-| -------------------------------- | ------------------ |
-| Player dead                      | Mental reset       |
-| Got a kill                       | Macro follow-up    |
-| Objective taken                  | Objectives         |
-| Baron/dragon spawning soon       | Objective prep     |
-| CS behind lane opponent          | Wave management    |
-| Gold in recall range             | Reset timing       |
-| Level spike (2, 3, 6, 9, 11, 16) | Trading            |
-| Periodic (3-4 min)               | Vision / tab check |
-| Nothing else firing              | Map awareness      |
+| Detector                    | Category        | Priority |
+| --------------------------- | --------------- | -------- |
+| Player dead                 | Mental          | 95       |
+| Teamfight (3+ kills in 10s)| Macro           | 90       |
+| Baron spawning soon         | Objectives      | 88       |
+| Got a kill                  | Macro           | 85       |
+| Dragon spawning soon        | Objectives      | 82       |
+| Objective taken             | Objectives      | 80       |
+| Low HP (under 30%)          | Reset timing    | 75       |
+| Level spike (2,3,6,9,11,16)| Trading         | 72       |
+| Enemy laner dead            | Macro           | 70       |
+| Enemy completed an item     | Trading         | 70       |
+| You completed an item       | Trading         | 65       |
+| KDA adaptive (0/3+)         | Mental          | 60       |
+| Sitting on gold (2500+)     | Reset timing    | 60       |
+| KDA adaptive (3/0+)         | Macro           | 55       |
+| Gold in recall range        | Reset timing    | 50       |
+| CS behind lane opponent     | Wave management | 45       |
+| Vision reminder (periodic)  | Vision          | 30       |
+| Tab check (periodic)        | Tab check       | 25       |
+| Nothing else firing         | Map awareness   | fallback |
+
+Prompts use templates with `{placeholders}` filled from live data. Anti-repetition tracks the last 20 prompts and won't repeat the same one within 5 minutes.
+
+## Output modes
+
+Beacon supports three output modes, cycled with `Ctrl+Shift+S`:
+
+- **overlay**: text prompt on the overlay widget
+- **speech**: Text-to-Speech via the Web Speech API
+- **both**: overlay and speech together
+
+Pause/resume prompts with `Ctrl+Shift+M`.
 
 ## Setup
 
-```
+```bash
 npm install
 npm run build
 npm start
 ```
 
-> [!WARNING]
-> For now, the game data poller runs separately. Start it in another terminal before launching a game:
->
-> ```
-> node server.js
-> ```
+> [!IMPORTANT]
+> You need `riotgames.pem` (Riot's local API certificate) in the project root. Grab it from [Riot's developer repo](https://static.developer.riotgames.com/docs/lol/riotgames.pem).
+
+## Packaging
+
+```
+npm run package
+npm run dist:win
+npm run dist:mac
+```
+
+Output goes to `release/`.
 
 > [!NOTE]
-> `server.js` needs `riotgames.pem` (Riot's local API certificate) in the project root. Grab it from [Riot's developer repo](https://static.developer.riotgames.com/docs/lol/riotgames.pem).
+> Cross-compiling from macOS to Windows works but code signing may need extra setup.
+
+## Tests
+
+```
+npm test
+```
 
 ## Stack
 
-- Electron
-- TypeScript (main process)
+- Electron (main + utility process for API polling)
+- TypeScript (main process, preload compiled as CommonJS)
 - Plain JS (renderer)
-- TypeScript compiled to CommonJS (preload)
-- Vitest (testing)
+- Vitest
