@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com"
+    />
+    <title>Beacon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="hub.css" />
+  </head>
+  <body>
+    <div class="hub">
+      <div class="drag-bar"></div>
+
+      <div class="content">
+        <h1 class="title">BEACON</h1>
+
+        <div class="beacon-ring">
+          <div class="beacon-dot"></div>
+        </div>
+
+        <p id="status-text" class="status">Searching for game</p>
+      </div>
+
+      <footer class="footer">
+        <span class="version"></span>
+      </footer>
+    </div>
+    <script src="hub.js"></script>
+  </body>
+</html>
