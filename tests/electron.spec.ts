@@ -6,10 +6,14 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const rendererJs = fs.readFileSync(
-  path.join(__dirname, '..', 'src', 'renderer', 'renderer.js'),
-  'utf-8',
-);
+let rendererJs: string;
+
+test.beforeAll(() => {
+  rendererJs = fs.readFileSync(
+    path.join(__dirname, '..', 'src', 'renderer', 'renderer.js'),
+    'utf-8',
+  );
+});
 
 function createMockSetupScript() {
   return `
@@ -19,8 +23,10 @@ function createMockSetupScript() {
       positionCalls: [],
       listeners: {
         stateChange: [],
-        speakPrompt: []
+        speakPrompt: [],
+        appStatus: []
       },
+      version: '0.2.0',
       triggerStateChange: function(data) {
         this.stateChanges.push(data);
         this.listeners.stateChange.forEach(function(cb) { cb(data); });
@@ -38,8 +44,14 @@ function createMockSetupScript() {
       onSpeakPrompt: function(callback) {
         window.__mockAPI.listeners.speakPrompt.push(callback);
       },
+      onAppStatus: function(callback) {
+        window.__mockAPI.listeners.appStatus.push(callback);
+      },
       setPosition: function(pos) {
         window.__mockAPI.positionCalls.push(pos);
+      },
+      getVersion: function() {
+        return Promise.resolve(window.__mockAPI.version);
       }
     };
   `;
@@ -183,7 +195,7 @@ test.describe('Drag Position Tracking', () => {
 });
 
 test.describe('Speak Prompt Handling', () => {
-  test('speak prompt is tracked when triggered', async ({ page }) => {
+  test('onSpeakPrompt handler is registered and callable', async ({ page }) => {
     await loadRendererWithMocks(page);
 
     await page.evaluate(() => {

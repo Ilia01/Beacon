@@ -10,26 +10,30 @@ describe('cycleOutputMode', () => {
     stopPromptLoop();
   });
 
-  it('cycles through all modes eventually', () => {
+  it('cycles through all three modes', () => {
     const results: OutputMode[] = [];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 3; i++) {
       results.push(cycleOutputMode());
     }
-    expect(results.length).toBe(6);
+    const uniqueResults = new Set(results);
+    expect(uniqueResults.size).toBe(3);
   });
 
-  it('cycles to the next mode in sequence', () => {
-    const first = cycleOutputMode();
-    const second = cycleOutputMode();
-    const third = cycleOutputMode();
-
-    const uniqueResults = new Set([first, second, third]);
-    expect(uniqueResults.size).toBe(3);
+  it('wraps from both back to overlay', () => {
+    cycleOutputMode();
+    cycleOutputMode();
+    cycleOutputMode();
+    const mode = cycleOutputMode();
+    expect(mode).toBe('overlay');
   });
 });
 
 describe('stopPromptLoop', () => {
-  it('resets the prompt loop state', () => {
+  it('resets cycle to start from overlay (wraps from both)', () => {
+    cycleOutputMode();
+    cycleOutputMode();
     stopPromptLoop();
+    const mode = cycleOutputMode();
+    expect(mode).toBe('overlay');
   });
 });

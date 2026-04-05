@@ -3,23 +3,10 @@ import https from 'node:https';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { GameSnapshot } from '../riot.types.js';
 import type { ServerMessage } from '../types.js';
 
-function isValidSnapshot(data: unknown): data is GameSnapshot {
-  if (typeof data !== 'object' || data === null) return false;
-  const d = data as Record<string, unknown>;
-  return (
-    typeof d.activePlayer === 'object' &&
-    d.activePlayer !== null &&
-    Array.isArray(d.allPlayers) &&
-    typeof d.events === 'object' &&
-    d.events !== null &&
-    typeof d.gameData === 'object' &&
-    d.gameData !== null &&
-    typeof (d.gameData as Record<string, unknown>).gameTime === 'number'
-  );
-}
+export { isValidSnapshot } from './validation.js';
+import { isValidSnapshot } from './validation.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');

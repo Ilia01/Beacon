@@ -1,22 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import type { GameSnapshot } from '../riot.types.js';
+import { isValidSnapshot } from './validation.js';
 
-describe('isValidSnapshot (via server module)', () => {
-  function isValidSnapshot(data: unknown): data is GameSnapshot {
-    if (typeof data !== 'object' || data === null) return false;
-    const d = data as Record<string, unknown>;
-    return (
-      typeof d.activePlayer === 'object' &&
-      d.activePlayer !== null &&
-      Array.isArray(d.allPlayers) &&
-      typeof d.events === 'object' &&
-      d.events !== null &&
-      typeof d.gameData === 'object' &&
-      d.gameData !== null &&
-      typeof (d.gameData as Record<string, unknown>).gameTime === 'number'
-    );
-  }
-
+describe('isValidSnapshot', () => {
   it('returns true for valid snapshot', () => {
     const valid: GameSnapshot = {
       activePlayer: {

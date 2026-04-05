@@ -5,34 +5,63 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function createMockSetupScript() {
+  return `
+    window.__mockAPI = {
+      positionCalls: [],
+      listeners: {
+        stateChange: [],
+        speakPrompt: []
+      }
+    };
+
+    window.electronAPI = {
+      onStateChange: function(callback) {
+        window.__mockAPI.listeners.stateChange.push(callback);
+      },
+      onSpeakPrompt: function(callback) {
+        window.__mockAPI.listeners.speakPrompt.push(callback);
+      },
+      setPosition: function(pos) {
+        window.__mockAPI.positionCalls.push(pos);
+      }
+    };
+  `;
+}
+
 test.describe('renderer.js', () => {
   test.beforeEach(async ({ page }) => {
-    const htmlPath = path.join(
-      __dirname,
-      '..',
-      'src',
-      'renderer',
-      'index.html',
-    );
+    await page.addInitScript(createMockSetupScript());
+    const htmlPath = path.join(__dirname, '..', 'src', 'renderer', 'index.html');
     await page.goto(`file://${htmlPath}`);
   });
 
-  test('sets valid states for coach element', async ({ page }) => {
+  test('coach element is visible', async ({ page }) => {
     const coach = page.locator('#coach');
     await expect(coach).toBeVisible();
   });
 
-  test('prompt text element exists', async ({ page }) => {
+  test('prompt text element is visible', async ({ page }) => {
     const promptText = page.locator('#prompt-text');
     await expect(promptText).toBeVisible();
   });
 
-  test('beacon element exists and is draggable', async ({ page }) => {
+  test('beacon element is visible and receives drag events', async ({ page }) => {
     const beacon = page.locator('#beacon');
     await expect(beacon).toBeVisible();
+
+    await beacon.dispatchEvent('mousedown', { screenX: 100, screenY: 100 });
+    await page.evaluate(() => {
+      document.dispatchEvent(
+        new MouseEvent('mousemove', { bubbles: true, screenX: 150, screenY: 120 })
+      );
+    });
+
+    const calls = await page.evaluate(() => (window as any).__mockAPI.positionCalls);
+    expect(calls.length).toBeGreaterThan(0);
   });
 
-  test('handles invalid state gracefully', async ({ page }) => {
+  test('coach element starts with idle class', async ({ page }) => {
     const coach = page.locator('#coach');
     await expect(coach).toHaveClass(/idle/);
   });
