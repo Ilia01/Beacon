@@ -24,4 +24,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.send('set-position', position);
   },
   getVersion: (): Promise<string> => ipcRenderer.invoke('get-version'),
+  getApiKey: (): Promise<string> => ipcRenderer.invoke('get-api-key'),
+  setApiKey: (key: string): Promise<void> =>
+    ipcRenderer.invoke('set-api-key', key),
 });

@@ -3,13 +3,15 @@ import {
   BrowserWindow,
   globalShortcut,
   ipcMain,
+  safeStorage,
   screen,
   utilityProcess,
 } from 'electron';
 import Store from 'electron-store';
+import { setGroqApiKey } from './coach.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Position } from '../types.js';
+import type { AppStore } from '../types.js';
 import {
   cycleOutputMode,
   handleServerMessage,
@@ -21,7 +23,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');
 const preloadPath = path.join(rootDir, 'dist', 'preload', 'preload.js');
 
-const store = new Store<Position>({
+const store = new Store<AppStore>({
   defaults: {
     x: 0,
     y: 0,
@@ -31,7 +33,7 @@ const store = new Store<Position>({
 const createHubWindow = () => {
   const win = new BrowserWindow({
     width: 380,
-    height: 320,
+    height: 420,
     frame: false,
     resizable: false,
     transparent: true,
@@ -109,6 +111,39 @@ app.whenReady().then(() => {
   const server = utilityProcess.fork(path.join(__dirname, 'server.js'));
 
   ipcMain.handle('get-version', () => app.getVersion());
+
+  ipcMain.handle('get-api-key', () => {
+    const encrypted = store.get('groqApiKey') as string | undefined;
+    if (!encrypted) return '';
+    try {
+      return safeStorage.decryptString(Buffer.from(encrypted, 'base64'));
+    } catch {
+      return '';
+    }
+  });
+
+  ipcMain.handle('set-api-key', (_event, key: string) => {
+    if (key) {
+      const encrypted = safeStorage.encryptString(key).toString('base64');
+      store.set('groqApiKey', encrypted);
+      setGroqApiKey(key);
+    } else {
+      store.delete('groqApiKey');
+    }
+  });
+
+  // Load saved key on startup
+  const savedKey = store.get('groqApiKey') as string | undefined;
+  if (savedKey) {
+    try {
+      const decrypted = safeStorage.decryptString(
+        Buffer.from(savedKey, 'base64'),
+      );
+      setGroqApiKey(decrypted);
+    } catch {
+      // corrupted key, ignore
+    }
+  }
 
   ipcMain.on('set-position', (_event, pos: { dx: number; dy: number }) => {
     const [currentX, currentY] = overlay.getPosition() as [number, number];
