@@ -28,7 +28,7 @@ export type DetectorResult = {
   data: Record<string, string>;
 };
 
-type DetectorInput = {
+export type DetectorInput = {
   snapshot: GameSnapshot;
   me: Player | undefined;
   enemyLaner: Player | undefined;
