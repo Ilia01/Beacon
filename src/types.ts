@@ -7,6 +7,10 @@ export type Position = {
   y: number;
 };
 
+export type AppStore = Position & {
+  groqApiKey?: string;
+};
+
 export type StateChangeEvent =
   | { state: 'active'; prompt: string }
   | { state: 'cooldown' }
