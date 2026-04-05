@@ -6,7 +6,7 @@ describe('isValidSnapshot', () => {
   it('returns true for valid snapshot', () => {
     const valid: GameSnapshot = {
       activePlayer: {
-        abilities: {}, championStats: {}, currentGold: 0, fullRunes: { generalRunes: [], keystone: {} as any, primaryRuneTree: {} as any, secondaryRuneTree: {} as any, statRunes: [] },
+        abilities: {}, championStats: { maxHealth: 100 }, currentGold: 0, fullRunes: { generalRunes: [], keystone: {} as any, primaryRuneTree: {} as any, secondaryRuneTree: {} as any, statRunes: [] },
         level: 1, riotId: '', riotIdGameName: '', riotIdTagLine: '', summonerName: '',
       } as any,
       allPlayers: [],
@@ -57,12 +57,27 @@ describe('isValidSnapshot', () => {
   });
 
   it('returns false when gameTime is not a number', () => {
-    const invalid = { activePlayer: {}, allPlayers: [], events: {}, gameData: { gameTime: '300' } };
+    const invalid = { activePlayer: { championStats: { maxHealth: 100 } }, allPlayers: [], events: { Events: [] }, gameData: { gameTime: '300' } };
     expect(isValidSnapshot(invalid)).toBe(false);
   });
 
   it('returns true when gameTime is zero', () => {
-    const valid = { activePlayer: {}, allPlayers: [], events: {}, gameData: { gameTime: 0 } };
+    const valid = { activePlayer: { championStats: { maxHealth: 100 } }, allPlayers: [], events: { Events: [] }, gameData: { gameTime: 0 } };
     expect(isValidSnapshot(valid)).toBe(true);
+  });
+
+  it('returns false when events.Events is not an array', () => {
+    const invalid = { activePlayer: { championStats: { maxHealth: 100 } }, allPlayers: [], events: { Events: 'not array' }, gameData: { gameTime: 300 } };
+    expect(isValidSnapshot(invalid)).toBe(false);
+  });
+
+  it('returns false when championStats.maxHealth is missing', () => {
+    const invalid = { activePlayer: { championStats: {} }, allPlayers: [], events: { Events: [] }, gameData: { gameTime: 300 } };
+    expect(isValidSnapshot(invalid)).toBe(false);
+  });
+
+  it('returns false when championStats.maxHealth is not a number', () => {
+    const invalid = { activePlayer: { championStats: { maxHealth: '100' } }, allPlayers: [], events: { Events: [] }, gameData: { gameTime: 300 } };
+    expect(isValidSnapshot(invalid)).toBe(false);
   });
 });

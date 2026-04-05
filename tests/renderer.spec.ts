@@ -11,7 +11,8 @@ function createMockSetupScript() {
       positionCalls: [],
       listeners: {
         stateChange: [],
-        speakPrompt: []
+        speakPrompt: [],
+        appStatus: []
       }
     };
 
@@ -22,8 +23,14 @@ function createMockSetupScript() {
       onSpeakPrompt: function(callback) {
         window.__mockAPI.listeners.speakPrompt.push(callback);
       },
+      onAppStatus: function(callback) {
+        window.__mockAPI.listeners.appStatus.push(callback);
+      },
       setPosition: function(pos) {
         window.__mockAPI.positionCalls.push(pos);
+      },
+      getVersion: function() {
+        return Promise.resolve('0.2.0');
       }
     };
   `;

@@ -1,22 +1,19 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   cycleOutputMode,
-  stopPromptLoop,
+  resetOutputMode,
   type OutputMode,
 } from './prompts.js';
 
 describe('cycleOutputMode', () => {
   beforeEach(() => {
-    stopPromptLoop();
+    resetOutputMode();
   });
 
-  it('cycles through all three modes', () => {
-    const results: OutputMode[] = [];
-    for (let i = 0; i < 3; i++) {
-      results.push(cycleOutputMode());
-    }
-    const uniqueResults = new Set(results);
-    expect(uniqueResults.size).toBe(3);
+  it('cycles from both to overlay to speech to both', () => {
+    expect(cycleOutputMode()).toBe('overlay');
+    expect(cycleOutputMode()).toBe('speech');
+    expect(cycleOutputMode()).toBe('both');
   });
 
   it('wraps from both back to overlay', () => {
@@ -28,12 +25,11 @@ describe('cycleOutputMode', () => {
   });
 });
 
-describe('stopPromptLoop', () => {
-  it('resets cycle to start from overlay (wraps from both)', () => {
+describe('resetOutputMode', () => {
+  it('resets outputMode to initial state from config', () => {
     cycleOutputMode();
     cycleOutputMode();
-    stopPromptLoop();
-    const mode = cycleOutputMode();
-    expect(mode).toBe('overlay');
+    resetOutputMode();
+    expect(cycleOutputMode()).toBe('overlay');
   });
 });
