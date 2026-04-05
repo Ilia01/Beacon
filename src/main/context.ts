@@ -88,14 +88,7 @@ export function deriveContext(
   }
 
   if (results.length === 0) {
-    return {
-      result: {
-        category: 'map_awareness' as PromptCategory,
-        reason: 'fallback',
-        data: {},
-      },
-      newState,
-    };
+    return { result: null, newState };
   }
 
   results.sort((a, b) => b.priority - a.priority);
