@@ -13,6 +13,8 @@ import {
   type ContextState,
 } from './context.js';
 import { canResolve, resolveTemplate } from './templates.js';
+import { rephrasePrompt, resetCoachHistory } from './coach.js';
+import { getGamePhase } from './phases.js';
 
 const PROMPT_HISTORY_MAX = 20;
 const PROMPT_REPEAT_WINDOW_MS = 300_000; // 5 minutes
@@ -40,10 +42,6 @@ const configMode = (config as { output_mode?: string }).output_mode;
 let outputMode: OutputMode = VALID_OUTPUT_MODES.has(configMode as OutputMode)
   ? (configMode as OutputMode)
   : 'both';
-
-export function getOutputMode(): OutputMode {
-  return outputMode;
-}
 
 export function cycleOutputMode(): OutputMode {
   const modes: OutputMode[] = ['overlay', 'speech', 'both'];
@@ -81,36 +79,56 @@ function recordPrompt(text: string, category: PromptCategory) {
   }
 }
 
-function pickPrompt(snapshot: GameSnapshot): string | null {
+function pickTemplateFallback(
+  category: PromptCategory,
+  data: Record<string, string>,
+): string | null {
+  const pool = prompts[category];
+  if (!pool || pool.length === 0) return null;
+
+  const resolved = pool
+    .filter((template) => canResolve(template, data))
+    .map((template) => resolveTemplate(template, data))
+    .filter((text) => !wasRecentlyShown(text));
+
+  if (resolved.length === 0) return null;
+  return resolved[Math.floor(Math.random() * resolved.length)]!;
+}
+
+async function pickPrompt(snapshot: GameSnapshot): Promise<string | null> {
   const { result, newState } = deriveContext(snapshot, contextState);
   contextState = newState;
 
   if (!result) return null;
   if (wasCategoryRecentlyUsed(result.category)) return null;
 
-  const pool = prompts[result.category];
-  if (!pool || pool.length === 0) return null;
+  const basePrompt = pickTemplateFallback(result.category, result.data);
+  if (!basePrompt) return null;
 
-  const resolved = pool
-    .filter((template) => canResolve(template, result.data))
-    .map((template) => resolveTemplate(template, result.data))
-    .filter((text) => !wasRecentlyShown(text));
+  // Try to rephrase with LLM, fall back to raw template
+  const phase = getGamePhase(snapshot.gameData.gameTime);
+  const rephrased = await rephrasePrompt(basePrompt, snapshot, phase);
 
-  if (resolved.length === 0) return null;
+  const picked =
+    rephrased && !wasRecentlyShown(rephrased) ? rephrased : basePrompt;
 
-  const picked = resolved[Math.floor(Math.random() * resolved.length)]!;
+  if (wasRecentlyShown(picked)) return null;
+
   recordPrompt(picked, result.category);
   return picked;
 }
 
-function evaluate(snapshot: GameSnapshot, win: BrowserWindow) {
+async function evaluate(snapshot: GameSnapshot, win: BrowserWindow) {
   if (paused || inCooldown) return;
+  inCooldown = true;
 
-  const prompt = pickPrompt(snapshot);
-  if (!prompt) return;
+  const prompt = await pickPrompt(snapshot);
+  if (!prompt) {
+    inCooldown = false;
+    return;
+  }
 
   sendStateChange(win, { state: 'active', prompt });
-  inCooldown = true;
 
   cooldownTimer = setTimeout(() => {
     sendStateChange(win, { state: 'cooldown' });
@@ -148,6 +166,7 @@ function resetState() {
   engineStatus = 'WAITING_FOR_GAME';
   contextState = { ...initialContextState };
   promptHistory = [];
+  resetCoachHistory();
 }
 
 export function stopPromptLoop() {
