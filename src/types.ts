@@ -18,3 +18,14 @@ export type ServerMessage =
       reason: string;
       errorCategory: FetchErrorCategory;
     };
+
+export type GameSummaryEntry = {
+  category: PromptCategory;
+  count: number;
+  timestamps: string[];
+};
+
+export type GameSummary = {
+  totalPrompts: number;
+  entries: GameSummaryEntry[];
+};

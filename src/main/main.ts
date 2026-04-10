@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import type { Position } from '../types.js';
 import {
   cycleOutputMode,
+  getLastGameSummary,
   handleServerMessage,
   stopPromptLoop,
   togglePromptLoop,
@@ -20,6 +21,10 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');
 const preloadPath = path.join(rootDir, 'dist-preload', 'preload', 'preload.js');
+
+const HUB_WIDTH = 380;
+const HUB_DEFAULT_HEIGHT = 320;
+const HUB_SUMMARY_HEIGHT = 520;
 
 const store = new Store<Position>({
   defaults: {
@@ -30,8 +35,8 @@ const store = new Store<Position>({
 
 const createHubWindow = () => {
   const win = new BrowserWindow({
-    width: 380,
-    height: 320,
+    width: HUB_WIDTH,
+    height: HUB_DEFAULT_HEIGHT,
     frame: false,
     resizable: false,
     transparent: true,
@@ -126,20 +131,24 @@ app.whenReady().then(() => {
     const transition = handleServerMessage(response, overlay);
 
     if (transition === 'game-started') {
+      const bounds = hub.getBounds();
+      hub.setBounds({ ...bounds, height: HUB_DEFAULT_HEIGHT });
       lastAppStatus = 'connected';
       hub.webContents.send('app-status', { status: 'connected' });
       hub.hide();
       overlay.show();
     } else if (transition === 'game-ended') {
       lastAppStatus = 'waiting';
+      const summary = getLastGameSummary();
       overlay.hide();
       hub.show();
       hub.webContents.send('app-status', { status: 'waiting' });
-    } else if (
-      typeof transition === 'object' &&
-      transition !== null &&
-      transition.type === 'error'
-    ) {
+      if (summary && summary.totalPrompts > 0) {
+        const summaryBounds = hub.getBounds();
+        hub.setBounds({ ...summaryBounds, height: HUB_SUMMARY_HEIGHT });
+        hub.webContents.send('game-summary', summary);
+      }
+    } else if (transition?.type === 'error') {
       lastAppStatus = 'error';
       stopPromptLoop();
       overlay.hide();
