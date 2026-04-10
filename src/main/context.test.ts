@@ -443,7 +443,12 @@ describe('deriveContext', () => {
   it('updates lastAbilityLevels in state', () => {
     const snap = makeSnapshot({
       level: 6,
-      abilities: { Q: { abilityLevel: 3 }, W: { abilityLevel: 1 }, E: { abilityLevel: 1 }, R: { abilityLevel: 1 } },
+      abilities: {
+        Q: { abilityLevel: 3 },
+        W: { abilityLevel: 1 },
+        E: { abilityLevel: 1 },
+        R: { abilityLevel: 1 },
+      },
     });
     const state = makeState({
       lastKnownLevel: 5,
