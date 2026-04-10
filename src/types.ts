@@ -7,10 +7,7 @@ export type Position = {
   y: number;
 };
 
-export type StateChangeEvent =
-  | { state: 'active'; prompt: string }
-  | { state: 'cooldown' }
-  | { state: 'idle' };
+export type { StateChangeEvent, AppStatus } from './ipc-types.js';
 
 export type ServerMessage =
   | { type: 'DATA'; payload: import('./riot.types.js').GameSnapshot }

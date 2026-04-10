@@ -1,10 +1,5 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
-type StateChangeEvent =
-  | { state: 'active'; prompt: string }
-  | { state: 'cooldown' }
-  | { state: 'idle' };
-
-type AppStatus = { status: 'waiting' } | { status: 'connected' };
+import type { StateChangeEvent, AppStatus } from '../ipc-types';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   onStateChange: (callback: (data: StateChangeEvent) => void) =>
