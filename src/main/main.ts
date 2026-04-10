@@ -107,7 +107,7 @@ app.whenReady().then(() => {
   let hub = createHubWindow();
   let overlay = createOverlayWindow();
   const server = utilityProcess.fork(path.join(__dirname, 'server.js'));
-  let lastAppStatus: string = 'waiting';
+  let lastAppStatus: 'waiting' | 'connected' | 'error' = 'waiting';
 
   ipcMain.handle('get-version', () => app.getVersion());
 
