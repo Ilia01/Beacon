@@ -44,12 +44,16 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   window.electronAPI.onAppStatus((value) => {
+    hub.classList.remove('connected', 'error');
+
     if (value.status === 'connected') {
       hub.classList.add('connected');
       statusText.textContent = 'Game detected';
       hideSummary();
+    } else if (value.status === 'error') {
+      hub.classList.add('error');
+      statusText.textContent = value.reason;
     } else {
-      hub.classList.remove('connected');
       statusText.textContent = 'Searching for game';
     }
   });

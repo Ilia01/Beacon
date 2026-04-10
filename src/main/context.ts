@@ -1,7 +1,7 @@
 import type { GameEvent, GameSnapshot } from '../riot.types.js';
 import type { PromptCategory } from '../types.js';
 import { getGamePhase, getCategoryWeight } from './phases.js';
-import { ALL_DETECTORS, type DetectorResult } from './detectors.js';
+import { ALL_DETECTORS, getRealItems, type DetectorResult } from './detectors.js';
 
 export type ContextResult = {
   category: PromptCategory;
@@ -34,26 +34,26 @@ export const initialContextState: ContextState = {
 function processEvents(
   allEvents: GameEvent[],
   state: ContextState,
-  newState: ContextState,
-): GameEvent[] {
+): { newEvents: GameEvent[]; stateUpdates: Partial<ContextState> } {
   const newEvents = allEvents.filter((e) => e.EventID > state.lastEventId);
+  const stateUpdates: Partial<ContextState> = {};
 
   if (newEvents.length > 0) {
-    newState.lastEventId = newEvents.reduce(
+    stateUpdates.lastEventId = newEvents.reduce(
       (max, e) => Math.max(max, e.EventID),
       0,
     );
 
     for (const event of newEvents) {
       if (event.EventName === 'DragonKill') {
-        newState.lastDragonKillTime = event.EventTime;
+        stateUpdates.lastDragonKillTime = event.EventTime;
       } else if (event.EventName === 'BaronKill') {
-        newState.lastBaronKillTime = event.EventTime;
+        stateUpdates.lastBaronKillTime = event.EventTime;
       }
     }
   }
 
-  return newEvents;
+  return { newEvents, stateUpdates };
 }
 
 export function deriveContext(
@@ -71,15 +71,31 @@ export function deriveContext(
 
   newState.lastKnownLevel = activePlayer.level;
 
-  const newEvents = processEvents(events.Events, state, newState);
+  const { newEvents, stateUpdates: eventUpdates } = processEvents(
+    events.Events,
+    state,
+  );
+  Object.assign(newState, eventUpdates);
+
+  // Track current item IDs for future comparisons
+  if (me) {
+    newState.lastMyItemIds = getRealItems(me).map((i) => i.itemID);
+  }
+  if (enemyLaner) {
+    newState.lastEnemyItemIds = getRealItems(enemyLaner).map((i) => i.itemID);
+  }
+
   const phase = getGamePhase(gameTime);
 
-  const input = { snapshot, me, enemyLaner, newEvents, state, newState };
+  const input = { snapshot, me, enemyLaner, newEvents, state };
 
   const results: DetectorResult[] = [];
   for (const detector of ALL_DETECTORS) {
     const result = detector(input);
     if (result) {
+      if (result.stateUpdates) {
+        Object.assign(newState, result.stateUpdates);
+      }
       const weight = getCategoryWeight(phase, result.category);
       if (weight > 0) {
         results.push({ ...result, priority: result.priority * weight });

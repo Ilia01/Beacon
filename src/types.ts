@@ -12,9 +12,15 @@ export type StateChangeEvent =
   | { state: 'cooldown' }
   | { state: 'idle' };
 
+export type FetchErrorCategory = 'game_not_running' | 'cert_error' | 'unknown';
+
 export type ServerMessage =
   | { type: 'DATA'; payload: import('./riot.types.js').GameSnapshot }
-  | { type: 'FETCH_ERROR'; reason: string };
+  | {
+      type: 'FETCH_ERROR';
+      reason: string;
+      errorCategory: FetchErrorCategory;
+    };
 
 export type GameSummaryEntry = {
   category: PromptCategory;

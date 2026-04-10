@@ -37,7 +37,11 @@ type EngineStatus = 'WAITING_FOR_GAME' | 'ACTIVE';
 let engineStatus: EngineStatus = 'WAITING_FOR_GAME';
 
 export type OutputMode = 'overlay' | 'speech' | 'both';
-export type EngineTransition = 'game-started' | 'game-ended' | null;
+export type EngineTransition =
+  | 'game-started'
+  | 'game-ended'
+  | { type: 'error'; reason: string }
+  | null;
 
 const VALID_OUTPUT_MODES = new Set<OutputMode>(['overlay', 'speech', 'both']);
 const configMode = (config as { output_mode?: string }).output_mode;
@@ -141,9 +145,14 @@ export function handleServerMessage(
   win: BrowserWindow,
 ): EngineTransition {
   if (response.type === 'FETCH_ERROR') {
-    const wasActive = engineStatus === 'ACTIVE';
+    if (response.errorCategory === 'game_not_running') {
+      const wasActive = engineStatus === 'ACTIVE';
+      resetState();
+      return wasActive ? 'game-ended' : null;
+    }
+
     resetState();
-    return wasActive ? 'game-ended' : null;
+    return { type: 'error', reason: response.reason };
   }
 
   if (engineStatus === 'WAITING_FOR_GAME') {

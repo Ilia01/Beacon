@@ -4,7 +4,10 @@ type StateChangeEvent =
   | { state: 'cooldown' }
   | { state: 'idle' };
 
-type AppStatus = { status: 'waiting' } | { status: 'connected' };
+type AppStatus =
+  | { status: 'waiting' }
+  | { status: 'connected' }
+  | { status: 'error'; reason: string };
 
 type GameSummaryEntry = {
   category: string;
