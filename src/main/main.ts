@@ -75,7 +75,7 @@ const createOverlayWindow = () => {
 
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
-  setInterval(() => {
+  const hitTestInterval = setInterval(() => {
     const cursor = screen.getCursorScreenPoint();
     const rect = win.getBounds();
 
@@ -90,6 +90,10 @@ const createOverlayWindow = () => {
       win.setIgnoreMouseEvents(true);
     }
   }, 100);
+
+  win.on('closed', () => {
+    clearInterval(hitTestInterval);
+  });
 
   win.on('moved', () => {
     const [x, y] = win.getPosition();
