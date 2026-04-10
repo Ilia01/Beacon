@@ -126,6 +126,11 @@ app.whenReady().then(() => {
       overlay.hide();
       hub.show();
       hub.webContents.send('app-status', { status: 'waiting' });
+    } else if (transition !== null && transition.type === 'error') {
+      hub.webContents.send('app-status', {
+        status: 'error',
+        reason: transition.reason,
+      });
     }
   });
 
