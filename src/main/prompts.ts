@@ -136,6 +136,7 @@ export function handleServerMessage(
       return wasActive ? 'game-ended' : null;
     }
 
+    resetState();
     return { type: 'error', reason: response.reason };
   }
 

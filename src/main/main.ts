@@ -127,6 +127,9 @@ app.whenReady().then(() => {
       hub.show();
       hub.webContents.send('app-status', { status: 'waiting' });
     } else if (transition !== null && transition.type === 'error') {
+      stopPromptLoop();
+      overlay.hide();
+      hub.show();
       hub.webContents.send('app-status', {
         status: 'error',
         reason: transition.reason,
