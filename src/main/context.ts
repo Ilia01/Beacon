@@ -20,7 +20,7 @@ export type ContextState = {
   lastBaronKillTime: number;
   lastMyItemIds: number[];
   lastEnemyItemIds: number[];
-  lastAbilityLevels: AbilityLevels;
+  lastAbilityLevels: AbilityLevels | null;
 };
 
 export const initialContextState: ContextState = {
@@ -32,7 +32,7 @@ export const initialContextState: ContextState = {
   lastBaronKillTime: 0,
   lastMyItemIds: [],
   lastEnemyItemIds: [],
-  lastAbilityLevels: { Q: 0, W: 0, E: 0, R: 0 },
+  lastAbilityLevels: null,
 };
 
 function processEvents(

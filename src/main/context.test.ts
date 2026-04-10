@@ -398,6 +398,19 @@ describe('deriveContext', () => {
   });
 
   // --- Signal: Ability spike ---
+  it('seeds ability levels on first tick without firing', () => {
+    const snap = makeSnapshot({
+      level: 8,
+      abilities: { Q: { abilityLevel: 3 }, R: { abilityLevel: 1 } },
+    });
+    // lastAbilityLevels is null (initial state) — first observation
+    const state = makeState();
+    const { result, newState } = deriveContext(snap, state);
+    expect(result?.reason).not.toBe('ult_unlock');
+    expect(result?.reason).not.toBe('ult_rank_up');
+    expect(newState.lastAbilityLevels).toEqual({ Q: 3, W: 0, E: 0, R: 1 });
+  });
+
   it('returns trading on ult unlock (R 0→1)', () => {
     const snap = makeSnapshot({
       level: 6,

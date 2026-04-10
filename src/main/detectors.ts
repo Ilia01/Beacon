@@ -5,7 +5,7 @@ import type {
   Player,
 } from '../riot.types.js';
 import type { PromptCategory } from '../types.js';
-import type { ContextState } from './context.js';
+import type { ContextState, AbilityLevels } from './context.js';
 import {
   CS_THRESHOLD,
   DRAGON_FIRST_SPAWN_S,
@@ -369,14 +369,18 @@ export function detectAbilitySpike(input: DetectorInput): DetectorResult | null 
   const abilities = input.snapshot.activePlayer.abilities;
   const prev = input.state.lastAbilityLevels;
 
-  input.newState.lastAbilityLevels = {
+  const current: AbilityLevels = {
     Q: abilities.Q.abilityLevel,
     W: abilities.W.abilityLevel,
     E: abilities.E.abilityLevel,
     R: abilities.R.abilityLevel,
   };
+  input.newState.lastAbilityLevels = current;
 
-  if (abilities.R.abilityLevel > prev.R) {
+  // First observation: seed without firing
+  if (prev === null) return null;
+
+  if (current.R > prev.R) {
     if (prev.R === 0) {
       return {
         category: 'trading',
@@ -389,7 +393,7 @@ export function detectAbilitySpike(input: DetectorInput): DetectorResult | null 
       category: 'trading',
       reason: 'ult_rank_up',
       priority: 74,
-      data: { ability: 'R', ability_level: String(abilities.R.abilityLevel) },
+      data: { ability: 'R', ability_level: String(current.R) },
     };
   }
 
