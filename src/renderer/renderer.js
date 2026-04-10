@@ -6,12 +6,20 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const VALID_STATES = new Set(['active', 'cooldown', 'idle']);
 
+  // Defense-in-depth: strip HTML so prompt text stays safe even if
+  // innerText is ever replaced with innerHTML for formatting support.
+  function sanitizeText(str) {
+    if (typeof str !== 'string') return '';
+    const doc = new DOMParser().parseFromString(str, 'text/html');
+    return doc.body.textContent || '';
+  }
+
   window.electronAPI.onStateChange((value) => {
     const state = VALID_STATES.has(value.state) ? value.state : 'idle';
     coach.className = 'coach ' + state;
 
     if (value.state === 'active') {
-      prompt.innerText = value.prompt;
+      prompt.innerText = sanitizeText(value.prompt);
       ping.play();
     }
   });
