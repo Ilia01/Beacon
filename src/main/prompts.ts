@@ -1,6 +1,7 @@
 import type { BrowserWindow } from 'electron';
 import type { GameSnapshot } from '../riot.types.js';
 import type {
+  GameSummary,
   PromptCategory,
   ServerMessage,
   StateChangeEvent,
@@ -21,6 +22,7 @@ type PromptHistoryEntry = {
   text: string;
   category: PromptCategory;
   time: number;
+  gameTimeSec: number;
 };
 
 let contextState: ContextState = { ...initialContextState };
@@ -28,6 +30,8 @@ let cooldownTimer: NodeJS.Timeout;
 let inCooldown = false;
 let paused = false;
 let promptHistory: PromptHistoryEntry[] = [];
+let summaryLog: PromptHistoryEntry[] = [];
+let lastGameSummary: GameSummary | null = null;
 
 type EngineStatus = 'WAITING_FOR_GAME' | 'ACTIVE';
 let engineStatus: EngineStatus = 'WAITING_FOR_GAME';
@@ -78,11 +82,22 @@ function wasCategoryRecentlyUsed(category: PromptCategory): boolean {
   return promptHistory.length > 0 && promptHistory[0]?.category === category;
 }
 
-function recordPrompt(text: string, category: PromptCategory) {
-  promptHistory.unshift({ text, category, time: Date.now() });
+function recordPrompt(
+  text: string,
+  category: PromptCategory,
+  gameTimeSec: number,
+) {
+  const entry: PromptHistoryEntry = {
+    text,
+    category,
+    time: Date.now(),
+    gameTimeSec,
+  };
+  promptHistory.unshift(entry);
   if (promptHistory.length > PROMPT_HISTORY_MAX) {
     promptHistory = promptHistory.slice(0, PROMPT_HISTORY_MAX);
   }
+  summaryLog.push(entry);
 }
 
 function pickPrompt(snapshot: GameSnapshot): string | null {
@@ -103,7 +118,7 @@ function pickPrompt(snapshot: GameSnapshot): string | null {
   if (resolved.length === 0) return null;
 
   const picked = resolved[Math.floor(Math.random() * resolved.length)]!;
-  recordPrompt(picked, result.category);
+  recordPrompt(picked, result.category, snapshot.gameData.gameTime);
   return picked;
 }
 
@@ -150,13 +165,56 @@ export function handleServerMessage(
   return null;
 }
 
+function formatGameTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${String(secs).padStart(2, '0')}`;
+}
+
+export function buildGameSummary(
+  history: readonly PromptHistoryEntry[],
+): GameSummary {
+  const categoryMap = new Map<
+    PromptCategory,
+    { count: number; timestamps: string[] }
+  >();
+
+  // Entries are in chronological order (oldest-first)
+  for (const entry of history) {
+    let bucket = categoryMap.get(entry.category);
+    if (!bucket) {
+      bucket = { count: 0, timestamps: [] };
+      categoryMap.set(entry.category, bucket);
+    }
+    bucket.count++;
+    bucket.timestamps.push(formatGameTime(entry.gameTimeSec));
+  }
+
+  const entries = [...categoryMap.entries()].map(([category, data]) => ({
+    category,
+    count: data.count,
+    timestamps: data.timestamps,
+  }));
+
+  // Sort by count descending
+  entries.sort((a, b) => b.count - a.count);
+
+  return { totalPrompts: history.length, entries };
+}
+
+export function getLastGameSummary(): GameSummary | null {
+  return lastGameSummary;
+}
+
 function resetState() {
+  lastGameSummary = buildGameSummary(summaryLog);
   clearTimeout(cooldownTimer);
   inCooldown = false;
   paused = false;
   engineStatus = 'WAITING_FOR_GAME';
   contextState = { ...initialContextState };
   promptHistory = [];
+  summaryLog = [];
 }
 
 export function stopPromptLoop() {

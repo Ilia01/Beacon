@@ -9,6 +9,17 @@ type AppStatus =
   | { status: 'connected' }
   | { status: 'error'; reason: string };
 
+type GameSummaryEntry = {
+  category: string;
+  count: number;
+  timestamps: string[];
+};
+
+type GameSummary = {
+  totalPrompts: number;
+  entries: GameSummaryEntry[];
+};
+
 contextBridge.exposeInMainWorld('electronAPI', {
   onStateChange: (callback: (data: StateChangeEvent) => void) =>
     ipcRenderer.on(
@@ -22,6 +33,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onSpeakPrompt: (callback: (text: string) => void) =>
     ipcRenderer.on('speak-prompt', (_event: IpcRendererEvent, value: string) =>
       callback(value),
+    ),
+  onGameSummary: (callback: (data: GameSummary) => void) =>
+    ipcRenderer.on(
+      'game-summary',
+      (_event: IpcRendererEvent, value: GameSummary) => callback(value),
     ),
   setPosition: (position: { dx: number; dy: number }) => {
     ipcRenderer.send('set-position', position);

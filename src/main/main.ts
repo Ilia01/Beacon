@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import type { Position } from '../types.js';
 import {
   cycleOutputMode,
+  getLastGameSummary,
   handleServerMessage,
   stopPromptLoop,
   togglePromptLoop,
@@ -28,10 +29,14 @@ const store = new Store<Position>({
   },
 });
 
+const HUB_WIDTH = 380;
+const HUB_DEFAULT_HEIGHT = 320;
+const HUB_SUMMARY_HEIGHT = 520;
+
 const createHubWindow = () => {
   const win = new BrowserWindow({
-    width: 380,
-    height: 320,
+    width: HUB_WIDTH,
+    height: HUB_DEFAULT_HEIGHT,
     frame: false,
     resizable: false,
     transparent: true,
@@ -128,6 +133,8 @@ app.whenReady().then(() => {
     if (transition === 'game-started') {
       lastAppStatus = 'connected';
       hub.webContents.send('app-status', { status: 'connected' });
+      const bounds = hub.getBounds();
+      hub.setBounds({ ...bounds, height: HUB_DEFAULT_HEIGHT });
       hub.hide();
       overlay.show();
     } else if (transition === 'game-ended') {
@@ -135,6 +142,12 @@ app.whenReady().then(() => {
       overlay.hide();
       hub.show();
       hub.webContents.send('app-status', { status: 'waiting' });
+      const summary = getLastGameSummary();
+      if (summary && summary.totalPrompts > 0) {
+        const bounds = hub.getBounds();
+        hub.setBounds({ ...bounds, height: HUB_SUMMARY_HEIGHT });
+        hub.webContents.send('game-summary', summary);
+      }
     } else if (
       typeof transition === 'object' &&
       transition !== null &&
