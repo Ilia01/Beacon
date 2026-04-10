@@ -29,10 +29,14 @@ const store = new Store<Position>({
   },
 });
 
+const HUB_WIDTH = 380;
+const HUB_DEFAULT_HEIGHT = 320;
+const HUB_SUMMARY_HEIGHT = 520;
+
 const createHubWindow = () => {
   const win = new BrowserWindow({
-    width: 380,
-    height: 320,
+    width: HUB_WIDTH,
+    height: HUB_DEFAULT_HEIGHT,
     frame: false,
     resizable: false,
     transparent: true,
@@ -120,6 +124,8 @@ app.whenReady().then(() => {
     const transition = handleServerMessage(response, overlay);
 
     if (transition === 'game-started') {
+      hub.setSize(HUB_WIDTH, HUB_DEFAULT_HEIGHT);
+      hub.center();
       hub.webContents.send('app-status', { status: 'connected' });
       hub.hide();
       overlay.show();
@@ -129,7 +135,7 @@ app.whenReady().then(() => {
       hub.show();
       hub.webContents.send('app-status', { status: 'waiting' });
       if (summary && summary.totalPrompts > 0) {
-        hub.setSize(380, 520);
+        hub.setSize(HUB_WIDTH, HUB_SUMMARY_HEIGHT);
         hub.center();
         hub.webContents.send('game-summary', summary);
       }
