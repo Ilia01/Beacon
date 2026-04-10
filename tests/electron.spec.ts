@@ -1,19 +1,9 @@
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
-import * as fs from 'fs';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-let rendererJs: string;
-
-test.beforeAll(() => {
-  rendererJs = fs.readFileSync(
-    path.join(__dirname, '..', 'src', 'renderer', 'renderer.js'),
-    'utf-8',
-  );
-});
 
 function createMockSetupScript() {
   return `
@@ -61,13 +51,7 @@ async function loadRendererWithMocks(page) {
   await page.addInitScript(createMockSetupScript());
 
   const htmlPath = path.join(__dirname, '..', 'src', 'renderer', 'index.html');
-  await page.goto(`file://${htmlPath}`);
-
-  await page.evaluate((rendererCode) => {
-    const script = document.createElement('script');
-    script.textContent = rendererCode;
-    document.body.appendChild(script);
-  }, rendererJs);
+  await page.goto(pathToFileURL(htmlPath).href);
 
   await page.waitForSelector('#coach');
 }
