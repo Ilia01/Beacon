@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { GameSnapshot } from '../riot.types.js';
 import type { ServerMessage } from '../types.js';
+import { classifyError } from './classify-error.js';
 
 function isValidSnapshot(data: unknown): data is GameSnapshot {
   if (typeof data !== 'object' || data === null) return false;
@@ -50,6 +51,7 @@ if (!cert) {
   parentPort.postMessage({
     type: 'FETCH_ERROR',
     reason: 'riotgames.pem not found',
+    errorCategory: 'cert_error',
   } satisfies ServerMessage);
   process.exit(1);
 }
@@ -63,13 +65,18 @@ async function getLiveGameData(): Promise<ServerMessage> {
       { httpsAgent, timeout: 1000 },
     );
     if (!isValidSnapshot(data)) {
-      return { type: 'FETCH_ERROR', reason: 'Invalid or partial game data' };
+      return {
+        type: 'FETCH_ERROR',
+        reason: 'Invalid or partial game data',
+        errorCategory: 'unknown',
+      };
     }
     return { type: 'DATA', payload: data };
   } catch (error: unknown) {
     return {
       type: 'FETCH_ERROR',
       reason: error instanceof Error ? error.message : 'Unknown error',
+      errorCategory: classifyError(error),
     };
   }
 }
