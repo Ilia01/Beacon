@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "electron .",
-    "build": "rm -rf dist && tsc && tsc -p tsconfig.preload.json",
+    "build": "rm -rf dist dist-preload && tsc && tsc -p tsconfig.preload.json",
     "package": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
     "dist:win": "npm run build && electron-builder --win",
@@ -21,6 +21,7 @@
     },
     "files": [
       "dist/**/*",
+      "dist-preload/**/*",
       "src/renderer/**/*",
       "data/**/*",
       "assets/**/*"
