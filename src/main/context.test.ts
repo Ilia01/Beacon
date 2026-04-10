@@ -4,7 +4,7 @@ import {
   initialContextState,
   type ContextState,
 } from './context.js';
-import type { GameSnapshot, Player } from '../riot.types.js';
+import type { GameSnapshot, Player, Abilities } from '../riot.types.js';
 
 const defaultScores: Player['scores'] = {
   assists: 0,
@@ -58,6 +58,9 @@ function makeSnapshot(
     creepScore?: number;
     enemyCreepScore?: number;
     events?: GameSnapshot['events']['Events'];
+    abilities?: Partial<
+      Record<'Q' | 'W' | 'E' | 'R', Partial<Abilities['Q']>>
+    >;
   } = {},
 ): GameSnapshot {
   const gameTime = overrides.gameTime ?? 300;
@@ -71,28 +74,28 @@ function makeSnapshot(
           rawDisplayName: '',
         },
         Q: {
-          abilityLevel: 1,
+          abilityLevel: overrides.abilities?.Q?.abilityLevel ?? 1,
           displayName: 'Q',
           id: 'Q',
           rawDescription: '',
           rawDisplayName: '',
         },
         W: {
-          abilityLevel: 0,
+          abilityLevel: overrides.abilities?.W?.abilityLevel ?? 0,
           displayName: 'W',
           id: 'W',
           rawDescription: '',
           rawDisplayName: '',
         },
         E: {
-          abilityLevel: 0,
+          abilityLevel: overrides.abilities?.E?.abilityLevel ?? 0,
           displayName: 'E',
           id: 'E',
           rawDescription: '',
           rawDisplayName: '',
         },
         R: {
-          abilityLevel: 0,
+          abilityLevel: overrides.abilities?.R?.abilityLevel ?? 0,
           displayName: 'R',
           id: 'R',
           rawDescription: '',
@@ -392,6 +395,62 @@ describe('deriveContext', () => {
     const state = makeState({ lastKnownLevel: 6 });
     const { result } = deriveContext(snap, state);
     expect(result?.reason).not.toMatch(/^level_/);
+  });
+
+  // --- Signal: Ability spike ---
+  it('returns trading on ult unlock (R 0→1)', () => {
+    const snap = makeSnapshot({
+      level: 6,
+      abilities: { R: { abilityLevel: 1 } },
+    });
+    const state = makeState({
+      lastKnownLevel: 5,
+      lastAbilityLevels: { Q: 3, W: 1, E: 1, R: 0 },
+    });
+    const { result } = deriveContext(snap, state);
+    expect(result?.category).toBe('trading');
+    expect(result?.reason).toBe('ult_unlock');
+  });
+
+  it('returns trading on ult rank up (R 1→2)', () => {
+    const snap = makeSnapshot({
+      level: 11,
+      abilities: { R: { abilityLevel: 2 } },
+    });
+    const state = makeState({
+      lastKnownLevel: 10,
+      lastAbilityLevels: { Q: 4, W: 3, E: 3, R: 1 },
+    });
+    const { result } = deriveContext(snap, state);
+    expect(result?.category).toBe('trading');
+    expect(result?.reason).toBe('ult_rank_up');
+  });
+
+  it('does not fire ability spike when R level unchanged', () => {
+    const snap = makeSnapshot({
+      level: 7,
+      abilities: { R: { abilityLevel: 1 } },
+    });
+    const state = makeState({
+      lastKnownLevel: 6,
+      lastAbilityLevels: { Q: 3, W: 2, E: 1, R: 1 },
+    });
+    const { result } = deriveContext(snap, state);
+    expect(result?.reason).not.toBe('ult_unlock');
+    expect(result?.reason).not.toBe('ult_rank_up');
+  });
+
+  it('updates lastAbilityLevels in state', () => {
+    const snap = makeSnapshot({
+      level: 6,
+      abilities: { Q: { abilityLevel: 3 }, W: { abilityLevel: 1 }, E: { abilityLevel: 1 }, R: { abilityLevel: 1 } },
+    });
+    const state = makeState({
+      lastKnownLevel: 5,
+      lastAbilityLevels: { Q: 3, W: 1, E: 1, R: 0 },
+    });
+    const { newState } = deriveContext(snap, state);
+    expect(newState.lastAbilityLevels).toEqual({ Q: 3, W: 1, E: 1, R: 1 });
   });
 
   // --- Signal 10: Vision periodic ---

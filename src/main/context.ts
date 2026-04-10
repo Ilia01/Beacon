@@ -9,6 +9,8 @@ export type ContextResult = {
   data: Record<string, string>;
 };
 
+export type AbilityLevels = { Q: number; W: number; E: number; R: number };
+
 export type ContextState = {
   lastEventId: number;
   lastTabCheckAt: number;
@@ -18,6 +20,7 @@ export type ContextState = {
   lastBaronKillTime: number;
   lastMyItemIds: number[];
   lastEnemyItemIds: number[];
+  lastAbilityLevels: AbilityLevels;
 };
 
 export const initialContextState: ContextState = {
@@ -29,6 +32,7 @@ export const initialContextState: ContextState = {
   lastBaronKillTime: 0,
   lastMyItemIds: [],
   lastEnemyItemIds: [],
+  lastAbilityLevels: { Q: 0, W: 0, E: 0, R: 0 },
 };
 
 function processEvents(

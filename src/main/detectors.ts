@@ -365,6 +365,37 @@ export function detectLevelSpike(input: DetectorInput): DetectorResult | null {
   return null;
 }
 
+export function detectAbilitySpike(input: DetectorInput): DetectorResult | null {
+  const abilities = input.snapshot.activePlayer.abilities;
+  const prev = input.state.lastAbilityLevels;
+
+  input.newState.lastAbilityLevels = {
+    Q: abilities.Q.abilityLevel,
+    W: abilities.W.abilityLevel,
+    E: abilities.E.abilityLevel,
+    R: abilities.R.abilityLevel,
+  };
+
+  if (abilities.R.abilityLevel > prev.R) {
+    if (prev.R === 0) {
+      return {
+        category: 'trading',
+        reason: 'ult_unlock',
+        priority: 78,
+        data: { ability: 'R' },
+      };
+    }
+    return {
+      category: 'trading',
+      reason: 'ult_rank_up',
+      priority: 74,
+      data: { ability: 'R', ability_level: String(abilities.R.abilityLevel) },
+    };
+  }
+
+  return null;
+}
+
 export function detectVision(input: DetectorInput): DetectorResult | null {
   const gameTime = input.snapshot.gameData.gameTime;
   if (gameTime - input.newState.lastVisionCheckAt >= VISION_CHECK_INTERVAL_S) {
@@ -401,6 +432,7 @@ export const ALL_DETECTORS = [
   detectObjectiveUpcoming,
   detectHpCritical,
   detectEnemyDeathWindow,
+  detectAbilitySpike,
   detectLevelSpike,
   detectItemCompleted,
   detectKdaAdaptive,
