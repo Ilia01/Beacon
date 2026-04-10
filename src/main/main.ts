@@ -76,6 +76,8 @@ const createOverlayWindow = () => {
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   const hitTestInterval = setInterval(() => {
+    if (!win.isVisible()) return;
+
     const cursor = screen.getCursorScreenPoint();
     const rect = win.getBounds();
 
