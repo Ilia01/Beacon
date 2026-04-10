@@ -41,5 +41,12 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "exclude": ["src/preload"]
+  "exclude": [
+    "src/preload",
+    "tests/**",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "vitest.config.ts",
+    "playwright.config.ts"
+  ]
 }

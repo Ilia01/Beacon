@@ -29,7 +29,7 @@ export type DetectorResult = {
   stateUpdates?: Partial<ContextState>;
 };
 
-type DetectorInput = {
+export type DetectorInput = {
   snapshot: GameSnapshot;
   me: Player | undefined;
   enemyLaner: Player | undefined;

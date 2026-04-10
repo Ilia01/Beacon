@@ -3,3 +3,11 @@
 /release
 /gamedata.json
 /current.json
+/test-results/
+/playwright-report/
+vitest.config.d.ts
+vitest.config.js
+vitest.config.js.map
+/playwright.config.d.ts
+/playwright.config.js
+/playwright.config.js.map
