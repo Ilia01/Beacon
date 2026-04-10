@@ -89,6 +89,14 @@ export function deriveContext(
     newState.lastEnemyItemIds = getRealItems(enemyLaner).map((i) => i.itemID);
   }
 
+  // Track ability levels each snapshot so detectAbilitySpike sees transitions
+  newState.lastAbilityLevels = {
+    Q: activePlayer.abilities.Q.abilityLevel,
+    W: activePlayer.abilities.W.abilityLevel,
+    E: activePlayer.abilities.E.abilityLevel,
+    R: activePlayer.abilities.R.abilityLevel,
+  };
+
   const phase = getGamePhase(gameTime);
 
   const input = { snapshot, me, enemyLaner, newEvents, state };
