@@ -21,6 +21,7 @@ export type DetectorResult = {
   reason: string;
   priority: number;
   data: Record<string, string>;
+  stateUpdates?: Partial<ContextState>;
 };
 
 type DetectorInput = {
@@ -29,7 +30,6 @@ type DetectorInput = {
   enemyLaner: Player | undefined;
   newEvents: GameEvent[];
   state: ContextState;
-  newState: ContextState;
 };
 
 // --- Reactive detectors (event-driven, high priority) ---
@@ -154,7 +154,7 @@ export function detectEnemyDeathWindow(
   };
 }
 
-function getRealItems(player: Player): Player['items'] {
+export function getRealItems(player: Player): Player['items'] {
   return player.items.filter((i) => !i.consumable && i.itemID !== 3340);
 }
 
@@ -170,12 +170,11 @@ function findNewItemName(
 export function detectItemCompleted(
   input: DetectorInput,
 ): DetectorResult | null {
-  const { me, enemyLaner, state, newState } = input;
+  const { me, enemyLaner, state } = input;
   if (!me) return null;
 
   const myItems = getRealItems(me);
   const myItemIds = myItems.map((i) => i.itemID);
-  newState.lastMyItemIds = myItemIds;
 
   if (
     state.lastMyItemIds.length > 0 &&
@@ -195,7 +194,6 @@ export function detectItemCompleted(
   if (!enemyLaner) return null;
   const enemyItems = getRealItems(enemyLaner);
   const enemyItemIds = enemyItems.map((i) => i.itemID);
-  newState.lastEnemyItemIds = enemyItemIds;
 
   if (
     state.lastEnemyItemIds.length > 0 &&
@@ -362,13 +360,13 @@ export function detectLevelSpike(input: DetectorInput): DetectorResult | null {
 
 export function detectVision(input: DetectorInput): DetectorResult | null {
   const gameTime = input.snapshot.gameData.gameTime;
-  if (gameTime - input.newState.lastVisionCheckAt >= VISION_CHECK_INTERVAL_S) {
-    input.newState.lastVisionCheckAt = gameTime;
+  if (gameTime - input.state.lastVisionCheckAt >= VISION_CHECK_INTERVAL_S) {
     return {
       category: 'vision',
       reason: 'periodic',
       priority: 30,
       data: {},
+      stateUpdates: { lastVisionCheckAt: gameTime },
     };
   }
   return null;
@@ -376,13 +374,13 @@ export function detectVision(input: DetectorInput): DetectorResult | null {
 
 export function detectTabCheck(input: DetectorInput): DetectorResult | null {
   const gameTime = input.snapshot.gameData.gameTime;
-  if (gameTime - input.newState.lastTabCheckAt >= TAB_CHECK_INTERVAL_S) {
-    input.newState.lastTabCheckAt = gameTime;
+  if (gameTime - input.state.lastTabCheckAt >= TAB_CHECK_INTERVAL_S) {
     return {
       category: 'tab_check',
       reason: 'periodic',
       priority: 25,
       data: {},
+      stateUpdates: { lastTabCheckAt: gameTime },
     };
   }
   return null;

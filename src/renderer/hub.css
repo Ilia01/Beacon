@@ -397,3 +397,30 @@ body {
   0% { inset: 0; opacity: 0.5; }
   100% { inset: -20px; opacity: 0; }
 }
+
+/* Error state */
+.hub.error .title {
+  color: #ff4444;
+  text-shadow: 0 0 20px #ff444466;
+}
+
+.hub.error .beacon-ring {
+  border-color: #ff444422;
+}
+
+.hub.error .beacon-ring::before {
+  border-color: #ff444466;
+}
+
+.hub.error .beacon-dot {
+  background: #ff4444;
+  border-color: #ff4444;
+  box-shadow:
+    0 0 12px #ff444466,
+    0 0 40px #ff444422;
+}
+
+.hub.error .status {
+  color: #ff4444;
+  font-size: 13px;
+}

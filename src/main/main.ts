@@ -77,7 +77,9 @@ const createOverlayWindow = () => {
 
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
-  setInterval(() => {
+  const hitTestInterval = setInterval(() => {
+    if (!win.isVisible()) return;
+
     const cursor = screen.getCursorScreenPoint();
     const rect = win.getBounds();
 
@@ -92,6 +94,10 @@ const createOverlayWindow = () => {
       win.setIgnoreMouseEvents(true);
     }
   }, 100);
+
+  win.on('closed', () => {
+    clearInterval(hitTestInterval);
+  });
 
   win.on('moved', () => {
     const [x, y] = win.getPosition();
@@ -109,6 +115,7 @@ app.whenReady().then(() => {
   let hub = createHubWindow();
   let overlay = createOverlayWindow();
   const server = utilityProcess.fork(path.join(__dirname, 'server.js'));
+  let lastAppStatus: 'waiting' | 'connected' | 'error' = 'waiting';
 
   ipcMain.handle('get-version', () => app.getVersion());
 
@@ -167,13 +174,28 @@ app.whenReady().then(() => {
     const transition = handleServerMessage(response, overlay);
 
     if (transition === 'game-started') {
+      lastAppStatus = 'connected';
       hub.webContents.send('app-status', { status: 'connected' });
       hub.hide();
       overlay.show();
     } else if (transition === 'game-ended') {
+      lastAppStatus = 'waiting';
       overlay.hide();
       hub.show();
       hub.webContents.send('app-status', { status: 'waiting' });
+    } else if (
+      typeof transition === 'object' &&
+      transition !== null &&
+      transition.type === 'error'
+    ) {
+      lastAppStatus = 'error';
+      stopPromptLoop();
+      overlay.hide();
+      hub.show();
+      hub.webContents.send('app-status', {
+        status: 'error',
+        reason: transition.reason,
+      });
     }
   });
 
@@ -181,7 +203,9 @@ app.whenReady().then(() => {
     stopPromptLoop();
     overlay.hide();
     hub.show();
-    hub.webContents.send('app-status', { status: 'waiting' });
+    if (lastAppStatus !== 'error') {
+      hub.webContents.send('app-status', { status: 'waiting' });
+    }
   });
 
   globalShortcut.register('CommandOrControl+Shift+M', () => {
@@ -190,6 +214,10 @@ app.whenReady().then(() => {
 
   globalShortcut.register('CommandOrControl+Shift+S', () => {
     const mode = cycleOutputMode();
+    // Intentionally bypasses sendStateChange so the mode confirmation is
+    // always shown as overlay text, even in speech-only mode. Without this,
+    // switching to speech-only would only announce the change via speech
+    // with no visual feedback.
     overlay.webContents.send('state-change', {
       state: 'active',
       prompt: `Output: ${mode}`,

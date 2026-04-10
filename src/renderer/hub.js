@@ -26,16 +26,23 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   saveKeyBtn.addEventListener('click', async () => {
     const key = apiKeyInput.value.trim();
-    if (!key) return;
 
     try {
       await window.electronAPI.setApiKey(key);
       apiKeyInput.value = '';
-      apiKeyInput.placeholder = KEY_SAVED_PLACEHOLDER;
-      keyBadge.textContent = 'active';
-      keyBadge.className = 'key-badge active';
-      keyStatus.textContent = 'Key saved';
-      keyStatus.className = 'key-status success';
+      if (key) {
+        apiKeyInput.placeholder = KEY_SAVED_PLACEHOLDER;
+        keyBadge.textContent = 'active';
+        keyBadge.className = 'key-badge active';
+        keyStatus.textContent = 'Key saved';
+        keyStatus.className = 'key-status success';
+      } else {
+        apiKeyInput.placeholder = 'gsk_...';
+        keyBadge.textContent = 'inactive';
+        keyBadge.className = 'key-badge inactive';
+        keyStatus.textContent = 'Key cleared';
+        keyStatus.className = 'key-status success';
+      }
       setTimeout(() => {
         keyStatus.textContent = '';
         keyStatus.className = 'key-status';
@@ -51,11 +58,15 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
 
   window.electronAPI.onAppStatus((value) => {
+    hub.classList.remove('connected', 'error');
+
     if (value.status === 'connected') {
       hub.classList.add('connected');
       statusText.textContent = 'Game detected';
+    } else if (value.status === 'error') {
+      hub.classList.add('error');
+      statusText.textContent = value.reason;
     } else {
-      hub.classList.remove('connected');
       statusText.textContent = 'Searching for game';
     }
   });

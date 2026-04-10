@@ -504,4 +504,45 @@ describe('deriveContext', () => {
     const { newState } = deriveContext(snap, makeState({ lastKnownLevel: 4 }));
     expect(newState.lastKnownLevel).toBe(5);
   });
+
+  // --- Immutability: state parameter must not be mutated ---
+  const deepFreeze = <T>(value: T): T => {
+    if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+      Object.freeze(value);
+      for (const nestedValue of Object.values(value)) {
+        deepFreeze(nestedValue);
+      }
+    }
+    return value;
+  };
+
+  it('does not mutate the input state when processing events', () => {
+    const snap = makeSnapshot({
+      events: [{ EventID: 1, EventName: 'DragonKill', EventTime: 310 }],
+    });
+    const state = deepFreeze(makeState());
+    const frozen = structuredClone(state);
+    deriveContext(snap, state);
+    expect(state).toEqual(frozen);
+  });
+
+  it('does not mutate the input state when vision fires', () => {
+    const snap = makeSnapshot({ gameTime: 300 });
+    const state = deepFreeze(
+      makeState({ lastVisionCheckAt: 0, lastTabCheckAt: 200 }),
+    );
+    const frozen = structuredClone(state);
+    deriveContext(snap, state);
+    expect(state).toEqual(frozen);
+  });
+
+  it('does not mutate the input state when tab check fires', () => {
+    const snap = makeSnapshot({ gameTime: 300 });
+    const state = deepFreeze(
+      makeState({ lastVisionCheckAt: 200, lastTabCheckAt: 0 }),
+    );
+    const frozen = structuredClone(state);
+    deriveContext(snap, state);
+    expect(state).toEqual(frozen);
+  });
 });
