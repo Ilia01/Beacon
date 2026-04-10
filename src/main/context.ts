@@ -9,6 +9,8 @@ export type ContextResult = {
   data: Record<string, string>;
 };
 
+export type AbilityLevels = { Q: number; W: number; E: number; R: number };
+
 export type ContextState = {
   lastEventId: number;
   lastTabCheckAt: number;
@@ -18,6 +20,7 @@ export type ContextState = {
   lastBaronKillTime: number;
   lastMyItemIds: number[];
   lastEnemyItemIds: number[];
+  lastAbilityLevels: AbilityLevels | null;
 };
 
 export const initialContextState: ContextState = {
@@ -29,6 +32,7 @@ export const initialContextState: ContextState = {
   lastBaronKillTime: 0,
   lastMyItemIds: [],
   lastEnemyItemIds: [],
+  lastAbilityLevels: null,
 };
 
 function processEvents(
@@ -84,6 +88,14 @@ export function deriveContext(
   if (enemyLaner) {
     newState.lastEnemyItemIds = getRealItems(enemyLaner).map((i) => i.itemID);
   }
+
+  // Track ability levels each snapshot so detectAbilitySpike sees transitions
+  newState.lastAbilityLevels = {
+    Q: activePlayer.abilities.Q.abilityLevel,
+    W: activePlayer.abilities.W.abilityLevel,
+    E: activePlayer.abilities.E.abilityLevel,
+    R: activePlayer.abilities.R.abilityLevel,
+  };
 
   const phase = getGamePhase(gameTime);
 

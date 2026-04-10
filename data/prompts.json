@@ -23,6 +23,8 @@
     "You just finished {item}. Look for a trade",
     "{enemy} just completed {item}. Respect their spike",
     "You hit level {level} -- you have the advantage. Trade now",
+    "You just unlocked {ability}! Look for an all-in opportunity",
+    "Your ult just ranked up (rank {ability_level}). You have a power spike -- look for a play",
     "What cooldowns does your opponent have up?",
     "Do you have a level or item advantage right now?",
     "Where are the enemy minions? Don't trade in their wave",
