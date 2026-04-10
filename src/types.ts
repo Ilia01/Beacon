@@ -15,3 +15,14 @@ export type StateChangeEvent =
 export type ServerMessage =
   | { type: 'DATA'; payload: import('./riot.types.js').GameSnapshot }
   | { type: 'FETCH_ERROR'; reason: string };
+
+export type GameSummaryEntry = {
+  category: string;
+  count: number;
+  timestamps: string[];
+};
+
+export type GameSummary = {
+  totalPrompts: number;
+  entries: GameSummaryEntry[];
+};

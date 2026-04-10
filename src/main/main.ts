@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import type { Position } from '../types.js';
 import {
   cycleOutputMode,
+  getLastGameSummary,
   handleServerMessage,
   stopPromptLoop,
   togglePromptLoop,
@@ -123,9 +124,15 @@ app.whenReady().then(() => {
       hub.hide();
       overlay.show();
     } else if (transition === 'game-ended') {
+      const summary = getLastGameSummary();
       overlay.hide();
       hub.show();
       hub.webContents.send('app-status', { status: 'waiting' });
+      if (summary && summary.totalPrompts > 0) {
+        hub.setSize(380, 520);
+        hub.center();
+        hub.webContents.send('game-summary', summary);
+      }
     }
   });
 
