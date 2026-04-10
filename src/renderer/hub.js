@@ -13,8 +13,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   const version = await window.electronAPI.getVersion();
   versionEl.textContent = `v${version}`;
 
-  const existing = await window.electronAPI.getApiKey();
-  if (existing) {
+  const hasKey = await window.electronAPI.hasApiKey();
+  if (hasKey) {
     apiKeyInput.placeholder = KEY_SAVED_PLACEHOLDER;
     keyBadge.textContent = 'active';
     keyBadge.className = 'key-badge active';

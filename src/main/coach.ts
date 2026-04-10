@@ -2,6 +2,9 @@ import Groq from 'groq-sdk';
 import type { GameSnapshot } from '../riot.types.js';
 import type { GamePhase } from './phases.js';
 
+const GROQ_TIMEOUT_MS = 2500;
+const MAX_WORDS = 15;
+
 let groq: Groq | null = null;
 let apiKey: string | null = null;
 
@@ -10,6 +13,11 @@ const MAX_RECENT = 6;
 
 export function setGroqApiKey(key: string): void {
   apiKey = key;
+  groq = null;
+}
+
+export function clearGroqApiKey(): void {
+  apiKey = null;
   groq = null;
 }
 
@@ -77,25 +85,33 @@ export async function rephrasePrompt(
       : '';
 
   try {
-    const response = await client.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `Game time: ${minutes}:${seconds} (${phase.replace('_', ' ')})\n${playerContext}\n\nRephrase this: "${basePrompt}"${recentBlock}`,
-        },
-      ],
-      max_tokens: 35,
-      temperature: 0.7,
-    });
+    const response = await client.chat.completions.create(
+      {
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          {
+            role: 'user',
+            content: `Game time: ${minutes}:${seconds} (${phase.replace('_', ' ')})\n${playerContext}\n\nRephrase this: "${basePrompt}"${recentBlock}`,
+          },
+        ],
+        max_tokens: 35,
+        temperature: 0.7,
+      },
+      { timeout: GROQ_TIMEOUT_MS },
+    );
 
     const text = response.choices[0]?.message?.content?.trim() ?? null;
-    if (text) {
-      recentPhrases.unshift(text);
-      if (recentPhrases.length > MAX_RECENT) {
-        recentPhrases.pop();
-      }
+    if (!text) return null;
+
+    // Reject if output exceeds word limit or contains multiple sentences
+    const wordCount = text.split(/\s+/).length;
+    const hasMultipleSentences = /[.!?]\s/.test(text);
+    if (wordCount > MAX_WORDS || hasMultipleSentences) return null;
+
+    recentPhrases.unshift(text);
+    if (recentPhrases.length > MAX_RECENT) {
+      recentPhrases.pop();
     }
     return text;
   } catch {

@@ -122,7 +122,14 @@ async function evaluate(snapshot: GameSnapshot, win: BrowserWindow) {
   if (paused || inCooldown) return;
   inCooldown = true;
 
-  const prompt = await pickPrompt(snapshot);
+  let prompt: string | null = null;
+  try {
+    prompt = await pickPrompt(snapshot);
+  } catch {
+    inCooldown = false;
+    return;
+  }
+
   if (!prompt) {
     inCooldown = false;
     return;

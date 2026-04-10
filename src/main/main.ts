@@ -8,7 +8,7 @@ import {
   utilityProcess,
 } from 'electron';
 import Store from 'electron-store';
-import { setGroqApiKey } from './coach.js';
+import { setGroqApiKey, clearGroqApiKey } from './coach.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AppStore } from '../types.js';
@@ -112,23 +112,33 @@ app.whenReady().then(() => {
 
   ipcMain.handle('get-version', () => app.getVersion());
 
-  ipcMain.handle('get-api-key', () => {
+  ipcMain.handle('has-api-key', () => {
     const encrypted = store.get('groqApiKey') as string | undefined;
-    if (!encrypted) return '';
+    if (!encrypted) return false;
     try {
-      return safeStorage.decryptString(Buffer.from(encrypted, 'base64'));
+      if (!safeStorage.isEncryptionAvailable()) return false;
+      safeStorage.decryptString(Buffer.from(encrypted, 'base64'));
+      return true;
     } catch {
-      return '';
+      return false;
     }
   });
 
   ipcMain.handle('set-api-key', (_event, key: string) => {
     if (key) {
-      const encrypted = safeStorage.encryptString(key).toString('base64');
-      store.set('groqApiKey', encrypted);
-      setGroqApiKey(key);
+      if (!safeStorage.isEncryptionAvailable()) {
+        throw new Error('Encryption unavailable on this system');
+      }
+      try {
+        const encrypted = safeStorage.encryptString(key).toString('base64');
+        store.set('groqApiKey', encrypted);
+        setGroqApiKey(key);
+      } catch {
+        throw new Error('Failed to encrypt API key');
+      }
     } else {
       store.delete('groqApiKey');
+      clearGroqApiKey();
     }
   });
 
@@ -136,12 +146,15 @@ app.whenReady().then(() => {
   const savedKey = store.get('groqApiKey') as string | undefined;
   if (savedKey) {
     try {
-      const decrypted = safeStorage.decryptString(
-        Buffer.from(savedKey, 'base64'),
-      );
-      setGroqApiKey(decrypted);
+      if (safeStorage.isEncryptionAvailable()) {
+        const decrypted = safeStorage.decryptString(
+          Buffer.from(savedKey, 'base64'),
+        );
+        setGroqApiKey(decrypted);
+      }
     } catch {
-      // corrupted key, ignore
+      // corrupted or unreadable key — remove it so the user can re-enter
+      store.delete('groqApiKey');
     }
   }
 
