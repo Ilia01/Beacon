@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ServerMessage } from '../types.js';
+import type { GameSnapshot } from '../riot.types.js';
 
 export { isValidSnapshot } from './validation.js';
 import { isValidSnapshot } from './validation.js';
@@ -52,7 +53,7 @@ async function getLiveGameData(): Promise<ServerMessage> {
     if (!isValidSnapshot(data)) {
       return { type: 'FETCH_ERROR', reason: 'Invalid or partial game data' };
     }
-    return { type: 'DATA', payload: data };
+    return { type: 'DATA', payload: data as GameSnapshot };
   } catch (error: unknown) {
     return {
       type: 'FETCH_ERROR',

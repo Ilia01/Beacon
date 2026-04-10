@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,7 +40,7 @@ test.describe('renderer.js', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(createMockSetupScript());
     const htmlPath = path.join(__dirname, '..', 'src', 'renderer', 'index.html');
-    await page.goto(`file://${htmlPath}`);
+    await page.goto(pathToFileURL(htmlPath).href);
   });
 
   test('coach element is visible', async ({ page }) => {

@@ -1,6 +1,11 @@
-import type { GameSnapshot } from '../riot.types.js';
+export type ValidatedSnapshot = {
+  activePlayer: { championStats: { maxHealth: number } };
+  allPlayers: unknown[];
+  events: { Events: unknown[] };
+  gameData: { gameTime: number };
+};
 
-export function isValidSnapshot(data: unknown): data is GameSnapshot {
+export function isValidSnapshot(data: unknown): data is ValidatedSnapshot {
   if (typeof data !== 'object' || data === null) return false;
   const d = data as Record<string, unknown>;
 
