@@ -17,7 +17,7 @@ export type ServerMessage =
   | { type: 'FETCH_ERROR'; reason: string };
 
 export type GameSummaryEntry = {
-  category: string;
+  category: PromptCategory;
   count: number;
   timestamps: string[];
 };

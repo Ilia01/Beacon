@@ -124,8 +124,8 @@ app.whenReady().then(() => {
     const transition = handleServerMessage(response, overlay);
 
     if (transition === 'game-started') {
-      hub.setSize(HUB_WIDTH, HUB_DEFAULT_HEIGHT);
-      hub.center();
+      const bounds = hub.getBounds();
+      hub.setBounds({ ...bounds, height: HUB_DEFAULT_HEIGHT });
       hub.webContents.send('app-status', { status: 'connected' });
       hub.hide();
       overlay.show();
@@ -135,8 +135,8 @@ app.whenReady().then(() => {
       hub.show();
       hub.webContents.send('app-status', { status: 'waiting' });
       if (summary && summary.totalPrompts > 0) {
-        hub.setSize(HUB_WIDTH, HUB_SUMMARY_HEIGHT);
-        hub.center();
+        const bounds = hub.getBounds();
+        hub.setBounds({ ...bounds, height: HUB_SUMMARY_HEIGHT });
         hub.webContents.send('game-summary', summary);
       }
     }

@@ -25,13 +25,13 @@ describe('buildGameSummary', () => {
   });
 
   it('counts prompts per category', () => {
-    // History is newest-first (unshift order)
+    // History is in chronological order (oldest-first)
     const history = [
-      entry('vision', 600),
-      entry('macro', 400),
-      entry('vision', 300),
-      entry('macro', 200),
       entry('macro', 100),
+      entry('macro', 200),
+      entry('vision', 300),
+      entry('macro', 400),
+      entry('vision', 600),
     ];
     const summary = buildGameSummary(history);
     expect(summary.totalPrompts).toBe(5);
@@ -45,12 +45,12 @@ describe('buildGameSummary', () => {
 
   it('sorts entries by count descending', () => {
     const history = [
-      entry('vision', 600),
-      entry('vision', 500),
-      entry('macro', 400),
-      entry('macro', 300),
-      entry('macro', 200),
       entry('trading', 100),
+      entry('macro', 200),
+      entry('macro', 300),
+      entry('macro', 400),
+      entry('vision', 500),
+      entry('vision', 600),
     ];
     const summary = buildGameSummary(history);
     expect(summary.entries[0]?.category).toBe('macro');
@@ -68,11 +68,11 @@ describe('buildGameSummary', () => {
   });
 
   it('lists timestamps in chronological order', () => {
-    // History is newest-first, but timestamps should be chronological
+    // History is in chronological order (oldest-first)
     const history = [
-      entry('macro', 600),
-      entry('macro', 300),
       entry('macro', 60),
+      entry('macro', 300),
+      entry('macro', 600),
     ];
     const summary = buildGameSummary(history);
     expect(summary.entries[0]?.timestamps).toEqual(['1:00', '5:00', '10:00']);

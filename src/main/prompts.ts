@@ -30,6 +30,7 @@ let cooldownTimer: NodeJS.Timeout;
 let inCooldown = false;
 let paused = false;
 let promptHistory: PromptHistoryEntry[] = [];
+let summaryLog: PromptHistoryEntry[] = [];
 let lastGameSummary: GameSummary | null = null;
 
 type EngineStatus = 'WAITING_FOR_GAME' | 'ACTIVE';
@@ -82,10 +83,17 @@ function recordPrompt(
   category: PromptCategory,
   gameTimeSec: number,
 ) {
-  promptHistory.unshift({ text, category, time: Date.now(), gameTimeSec });
+  const entry: PromptHistoryEntry = {
+    text,
+    category,
+    time: Date.now(),
+    gameTimeSec,
+  };
+  promptHistory.unshift(entry);
   if (promptHistory.length > PROMPT_HISTORY_MAX) {
     promptHistory = promptHistory.slice(0, PROMPT_HISTORY_MAX);
   }
+  summaryLog.push(entry);
 }
 
 function pickPrompt(snapshot: GameSnapshot): string | null {
@@ -158,13 +166,12 @@ export function buildGameSummary(
   history: readonly PromptHistoryEntry[],
 ): GameSummary {
   const categoryMap = new Map<
-    string,
+    PromptCategory,
     { count: number; timestamps: string[] }
   >();
 
-  // History is newest-first; iterate in reverse for chronological order
-  for (let i = history.length - 1; i >= 0; i--) {
-    const entry = history[i]!;
+  // Entries are in chronological order (oldest-first)
+  for (const entry of history) {
     let bucket = categoryMap.get(entry.category);
     if (!bucket) {
       bucket = { count: 0, timestamps: [] };
@@ -196,8 +203,9 @@ function resetState() {
   paused = false;
   engineStatus = 'WAITING_FOR_GAME';
   contextState = { ...initialContextState };
-  lastGameSummary = buildGameSummary(promptHistory);
+  lastGameSummary = buildGameSummary(summaryLog);
   promptHistory = [];
+  summaryLog = [];
 }
 
 export function stopPromptLoop() {
