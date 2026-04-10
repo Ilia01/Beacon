@@ -11,6 +11,8 @@ export type { StateChangeEvent, AppStatus } from './ipc-types.js';
 
 export type FetchErrorCategory = 'game_not_running' | 'cert_error' | 'unknown';
 
+export type FetchErrorCategory = 'game_not_running' | 'cert_error' | 'unknown';
+
 export type ServerMessage =
   | { type: 'DATA'; payload: import('./riot.types.js').GameSnapshot }
   | {
