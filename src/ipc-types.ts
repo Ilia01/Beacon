@@ -3,4 +3,7 @@ export type StateChangeEvent =
   | { state: 'cooldown' }
   | { state: 'idle' };
 
-export type AppStatus = { status: 'waiting' } | { status: 'connected' };
+export type AppStatus =
+  | { status: 'waiting' }
+  | { status: 'connected' }
+  | { status: 'error'; reason: string };
