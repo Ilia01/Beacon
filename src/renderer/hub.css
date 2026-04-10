@@ -5,9 +5,13 @@
   --glow-faint: #00ffc80a;
   --surface: #0a0e1a;
   --surface-raised: #0f1424;
+  --surface-inset: #070a14;
   --text: #d0f0e8;
   --text-dim: #5a7a70;
+  --text-muted: #3a5248;
   --border: #1a2040;
+  --border-subtle: #141830;
+  --danger: #ff6b6b;
 }
 
 * {
@@ -59,6 +63,12 @@ body {
   gap: 20px;
   padding: 0 32px;
   margin-top: -16px;
+  transition: margin-top 0.3s ease, gap 0.3s ease;
+}
+
+.hub.settings-open .content {
+  margin-top: -24px;
+  gap: 14px;
 }
 
 /* Title */
@@ -80,6 +90,12 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.hub.settings-open .beacon-ring {
+  width: 56px;
+  height: 56px;
 }
 
 .beacon-ring::before {
@@ -91,6 +107,10 @@ body {
   animation: spin-ring 20s linear infinite;
 }
 
+.hub.settings-open .beacon-ring::before {
+  inset: -8px;
+}
+
 .beacon-dot {
   width: 24px;
   height: 24px;
@@ -100,6 +120,12 @@ body {
   box-shadow: 0 0 8px #0003;
   animation: breathe 4s ease-in-out infinite;
   position: relative;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.hub.settings-open .beacon-dot {
+  width: 18px;
+  height: 18px;
 }
 
 .beacon-dot::after {
@@ -118,12 +144,201 @@ body {
   letter-spacing: 1.5px;
   color: var(--text-dim);
   text-transform: uppercase;
+  transition: font-size 0.3s ease;
 }
 
+.hub.settings-open .status {
+  font-size: 13px;
+}
+
+/* Settings panel */
+.settings-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.hub.settings-open .settings-panel {
+  max-height: 160px;
+}
+
+.settings-divider {
+  width: 40px;
+  height: 1px;
+  background: var(--border);
+  margin: 0 auto 12px;
+}
+
+.settings-inner {
+  padding: 0 28px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.key-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+
+.key-badge.inactive {
+  color: var(--text-muted);
+  border-color: var(--border-subtle);
+  background: transparent;
+}
+
+.key-badge.active {
+  color: var(--glow);
+  border-color: var(--glow-dim);
+  background: var(--glow-faint);
+}
+
+.settings-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+
+.hint-link {
+  color: var(--text-dim);
+  border-bottom: 1px dashed var(--border);
+}
+
+.key-input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.key-input {
+  flex: 1;
+  background: var(--surface-inset);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.key-input::placeholder {
+  color: var(--text-muted);
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.key-input:focus {
+  border-color: var(--glow-dim);
+  box-shadow: 0 0 0 1px var(--glow-faint);
+}
+
+.save-btn {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 7px 16px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.save-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--glow);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.save-btn:hover {
+  border-color: var(--glow-dim);
+  color: var(--glow);
+}
+
+.save-btn:active {
+  transform: scale(0.97);
+}
+
+.save-btn-text {
+  position: relative;
+  z-index: 1;
+}
+
+.key-status {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  min-height: 14px;
+  text-transform: uppercase;
+  transition: opacity 0.3s ease;
+}
+
+.key-status.success {
+  color: var(--glow);
+}
+
+.key-status.error {
+  color: var(--danger);
+}
+
+/* Footer */
 .footer {
   padding: 0 20px 12px;
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.settings-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  line-height: 0;
+  transition: all 0.3s ease;
+  -webkit-app-region: no-drag;
+}
+
+.settings-toggle:hover {
+  color: var(--text-dim);
+}
+
+.hub.settings-open .settings-toggle {
+  color: var(--glow);
+  filter: drop-shadow(0 0 4px var(--glow-dim));
+  transform: rotate(45deg);
 }
 
 .version {

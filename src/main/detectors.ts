@@ -1,9 +1,4 @@
-import type {
-  ActivePlayer,
-  GameEvent,
-  GameSnapshot,
-  Player,
-} from '../riot.types.js';
+import type { GameEvent, GameSnapshot, Player } from '../riot.types.js';
 import type { PromptCategory } from '../types.js';
 import type { ContextState } from './context.js';
 import {

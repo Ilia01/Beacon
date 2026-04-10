@@ -24,7 +24,42 @@
         <p id="status-text" class="status">Searching for game</p>
       </div>
 
+      <div id="settings-panel" class="settings-panel">
+        <div class="settings-divider"></div>
+
+        <div class="settings-inner">
+          <div class="settings-header">
+            <span class="settings-title">AI Coach</span>
+            <span id="key-badge" class="key-badge inactive">inactive</span>
+          </div>
+
+          <p class="settings-hint">Paste a free API key from <span class="hint-link">console.groq.com</span></p>
+
+          <div class="key-input-row">
+            <input
+              id="api-key-input"
+              type="password"
+              class="key-input"
+              placeholder="gsk_..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <button id="save-key-btn" class="save-btn">
+              <span class="save-btn-text">Save</span>
+            </button>
+          </div>
+
+          <p id="key-status" class="key-status"></p>
+        </div>
+      </div>
+
       <footer class="footer">
+        <button id="settings-btn" class="settings-toggle" title="Settings">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+        </button>
         <span class="version"></span>
       </footer>
     </div>

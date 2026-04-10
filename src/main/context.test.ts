@@ -384,14 +384,14 @@ describe('deriveContext', () => {
     const snap = makeSnapshot({ level: 4 });
     const state = makeState({ lastKnownLevel: 3 });
     const { result } = deriveContext(snap, state);
-    expect(result?.reason).not.toMatch(/^level_/);
+    expect(result?.reason ?? '').not.toMatch(/^level_/);
   });
 
   it('does not fire trading when level unchanged', () => {
     const snap = makeSnapshot({ level: 6 });
     const state = makeState({ lastKnownLevel: 6 });
     const { result } = deriveContext(snap, state);
-    expect(result?.reason).not.toMatch(/^level_/);
+    expect(result?.reason ?? '').not.toMatch(/^level_/);
   });
 
   // --- Signal 10: Vision periodic ---
@@ -414,12 +414,11 @@ describe('deriveContext', () => {
     expect(newState.lastTabCheckAt).toBe(300);
   });
 
-  // --- Signal 12: Fallback ---
-  it('returns map_awareness as fallback', () => {
+  // --- Signal 12: No detectors fire ---
+  it('returns null when no detector fires', () => {
     const snap = makeSnapshot();
     const { result } = deriveContext(snap, makeState());
-    expect(result?.category).toBe('map_awareness');
-    expect(result?.reason).toBe('fallback');
+    expect(result).toBeNull();
   });
 
   // --- Priority ---

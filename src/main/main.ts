@@ -3,13 +3,15 @@ import {
   BrowserWindow,
   globalShortcut,
   ipcMain,
+  safeStorage,
   screen,
   utilityProcess,
 } from 'electron';
 import Store from 'electron-store';
+import { setGroqApiKey, clearGroqApiKey } from './coach.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Position } from '../types.js';
+import type { AppStore } from '../types.js';
 import {
   cycleOutputMode,
   handleServerMessage,
@@ -21,7 +23,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');
 const preloadPath = path.join(rootDir, 'dist', 'preload', 'preload.js');
 
-const store = new Store<Position>({
+const store = new Store<AppStore>({
   defaults: {
     x: 0,
     y: 0,
@@ -31,7 +33,7 @@ const store = new Store<Position>({
 const createHubWindow = () => {
   const win = new BrowserWindow({
     width: 380,
-    height: 320,
+    height: 420,
     frame: false,
     resizable: false,
     transparent: true,
@@ -116,6 +118,52 @@ app.whenReady().then(() => {
   let lastAppStatus: 'waiting' | 'connected' | 'error' = 'waiting';
 
   ipcMain.handle('get-version', () => app.getVersion());
+
+  ipcMain.handle('has-api-key', () => {
+    const encrypted = store.get('groqApiKey') as string | undefined;
+    if (!encrypted) return false;
+    try {
+      if (!safeStorage.isEncryptionAvailable()) return false;
+      safeStorage.decryptString(Buffer.from(encrypted, 'base64'));
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
+  ipcMain.handle('set-api-key', (_event, key: string) => {
+    if (key) {
+      if (!safeStorage.isEncryptionAvailable()) {
+        throw new Error('Encryption unavailable on this system');
+      }
+      try {
+        const encrypted = safeStorage.encryptString(key).toString('base64');
+        store.set('groqApiKey', encrypted);
+        setGroqApiKey(key);
+      } catch {
+        throw new Error('Failed to encrypt API key');
+      }
+    } else {
+      store.delete('groqApiKey');
+      clearGroqApiKey();
+    }
+  });
+
+  // Load saved key on startup
+  const savedKey = store.get('groqApiKey') as string | undefined;
+  if (savedKey) {
+    try {
+      if (safeStorage.isEncryptionAvailable()) {
+        const decrypted = safeStorage.decryptString(
+          Buffer.from(savedKey, 'base64'),
+        );
+        setGroqApiKey(decrypted);
+      }
+    } catch {
+      // corrupted or unreadable key — remove it so the user can re-enter
+      store.delete('groqApiKey');
+    }
+  }
 
   ipcMain.on('set-position', (_event, pos: { dx: number; dy: number }) => {
     const [currentX, currentY] = overlay.getPosition() as [number, number];
