@@ -107,6 +107,7 @@ app.whenReady().then(() => {
   let hub = createHubWindow();
   let overlay = createOverlayWindow();
   const server = utilityProcess.fork(path.join(__dirname, 'server.js'));
+  let lastAppStatus: string = 'waiting';
 
   ipcMain.handle('get-version', () => app.getVersion());
 
@@ -119,14 +120,21 @@ app.whenReady().then(() => {
     const transition = handleServerMessage(response, overlay);
 
     if (transition === 'game-started') {
+      lastAppStatus = 'connected';
       hub.webContents.send('app-status', { status: 'connected' });
       hub.hide();
       overlay.show();
     } else if (transition === 'game-ended') {
+      lastAppStatus = 'waiting';
       overlay.hide();
       hub.show();
       hub.webContents.send('app-status', { status: 'waiting' });
-    } else if (transition !== null && transition.type === 'error') {
+    } else if (
+      typeof transition === 'object' &&
+      transition !== null &&
+      transition.type === 'error'
+    ) {
+      lastAppStatus = 'error';
       stopPromptLoop();
       overlay.hide();
       hub.show();
@@ -141,7 +149,9 @@ app.whenReady().then(() => {
     stopPromptLoop();
     overlay.hide();
     hub.show();
-    hub.webContents.send('app-status', { status: 'waiting' });
+    if (lastAppStatus !== 'error') {
+      hub.webContents.send('app-status', { status: 'waiting' });
+    }
   });
 
   globalShortcut.register('CommandOrControl+Shift+M', () => {
