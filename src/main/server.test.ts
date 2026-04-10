@@ -2,12 +2,28 @@ import { describe, it, expect } from 'vitest';
 import type { GameSnapshot } from '../riot.types.js';
 import { isValidSnapshot } from './validation.js';
 
+function makeValidSnapshot(overrides?: Record<string, unknown>): unknown {
+  return {
+    activePlayer: {
+      riotId: 'Player#TAG',
+      riotIdGameName: 'Player',
+      level: 1,
+      currentGold: 0,
+      championStats: { maxHealth: 1000, currentHealth: 600 },
+    },
+    allPlayers: [],
+    events: { Events: [] },
+    gameData: { gameMode: 'CLASSIC', gameTime: 300, mapName: 'Map11', mapNumber: 11, mapTerrain: 'Default' },
+    ...overrides,
+  };
+}
+
 describe('isValidSnapshot', () => {
   it('returns true for valid snapshot', () => {
     const valid: GameSnapshot = {
       activePlayer: {
-        abilities: {}, championStats: { maxHealth: 100 }, currentGold: 0, fullRunes: { generalRunes: [], keystone: {} as any, primaryRuneTree: {} as any, secondaryRuneTree: {} as any, statRunes: [] },
-        level: 1, riotId: '', riotIdGameName: '', riotIdTagLine: '', summonerName: '',
+        abilities: {}, championStats: { maxHealth: 1000, currentHealth: 600 }, currentGold: 0, fullRunes: { generalRunes: [], keystone: {} as any, primaryRuneTree: {} as any, secondaryRuneTree: {} as any, statRunes: [] },
+        level: 1, riotId: 'Player#TAG', riotIdGameName: 'Player', riotIdTagLine: 'TAG', summonerName: 'Player',
       } as any,
       allPlayers: [],
       events: { Events: [] },
@@ -37,8 +53,7 @@ describe('isValidSnapshot', () => {
   });
 
   it('returns false when allPlayers is not an array', () => {
-    const invalid = { activePlayer: {}, allPlayers: 'not an array', events: {}, gameData: { gameTime: 300 } };
-    expect(isValidSnapshot(invalid)).toBe(false);
+    expect(isValidSnapshot(makeValidSnapshot({ allPlayers: 'not an array' }))).toBe(false);
   });
 
   it('returns false when events is missing', () => {
@@ -52,32 +67,60 @@ describe('isValidSnapshot', () => {
   });
 
   it('returns false when gameTime is missing', () => {
-    const invalid = { activePlayer: {}, allPlayers: [], events: {}, gameData: { gameMode: 'CLASSIC' } };
-    expect(isValidSnapshot(invalid)).toBe(false);
+    expect(isValidSnapshot(makeValidSnapshot({ gameData: { gameMode: 'CLASSIC' } }))).toBe(false);
   });
 
   it('returns false when gameTime is not a number', () => {
-    const invalid = { activePlayer: { championStats: { maxHealth: 100 } }, allPlayers: [], events: { Events: [] }, gameData: { gameTime: '300' } };
-    expect(isValidSnapshot(invalid)).toBe(false);
+    expect(isValidSnapshot(makeValidSnapshot({ gameData: { gameTime: '300' } }))).toBe(false);
   });
 
   it('returns true when gameTime is zero', () => {
-    const valid = { activePlayer: { championStats: { maxHealth: 100 } }, allPlayers: [], events: { Events: [] }, gameData: { gameTime: 0 } };
-    expect(isValidSnapshot(valid)).toBe(true);
+    expect(isValidSnapshot(makeValidSnapshot({ gameData: { gameTime: 0 } }))).toBe(true);
   });
 
   it('returns false when events.Events is not an array', () => {
-    const invalid = { activePlayer: { championStats: { maxHealth: 100 } }, allPlayers: [], events: { Events: 'not array' }, gameData: { gameTime: 300 } };
-    expect(isValidSnapshot(invalid)).toBe(false);
+    expect(isValidSnapshot(makeValidSnapshot({ events: { Events: 'not array' } }))).toBe(false);
   });
 
   it('returns false when championStats.maxHealth is missing', () => {
-    const invalid = { activePlayer: { championStats: {} }, allPlayers: [], events: { Events: [] }, gameData: { gameTime: 300 } };
-    expect(isValidSnapshot(invalid)).toBe(false);
+    expect(isValidSnapshot(makeValidSnapshot({
+      activePlayer: { riotId: 'x', riotIdGameName: 'x', level: 1, currentGold: 0, championStats: { currentHealth: 100 } },
+    }))).toBe(false);
   });
 
   it('returns false when championStats.maxHealth is not a number', () => {
-    const invalid = { activePlayer: { championStats: { maxHealth: '100' } }, allPlayers: [], events: { Events: [] }, gameData: { gameTime: 300 } };
-    expect(isValidSnapshot(invalid)).toBe(false);
+    expect(isValidSnapshot(makeValidSnapshot({
+      activePlayer: { riotId: 'x', riotIdGameName: 'x', level: 1, currentGold: 0, championStats: { maxHealth: '100', currentHealth: 100 } },
+    }))).toBe(false);
+  });
+
+  it('returns false when championStats.currentHealth is missing', () => {
+    expect(isValidSnapshot(makeValidSnapshot({
+      activePlayer: { riotId: 'x', riotIdGameName: 'x', level: 1, currentGold: 0, championStats: { maxHealth: 1000 } },
+    }))).toBe(false);
+  });
+
+  it('returns false when activePlayer.riotId is missing', () => {
+    expect(isValidSnapshot(makeValidSnapshot({
+      activePlayer: { riotIdGameName: 'Player', level: 1, currentGold: 0, championStats: { maxHealth: 1000, currentHealth: 600 } },
+    }))).toBe(false);
+  });
+
+  it('returns false when activePlayer.riotIdGameName is missing', () => {
+    expect(isValidSnapshot(makeValidSnapshot({
+      activePlayer: { riotId: 'Player#TAG', level: 1, currentGold: 0, championStats: { maxHealth: 1000, currentHealth: 600 } },
+    }))).toBe(false);
+  });
+
+  it('returns false when activePlayer.level is not a number', () => {
+    expect(isValidSnapshot(makeValidSnapshot({
+      activePlayer: { riotId: 'x', riotIdGameName: 'x', level: '1', currentGold: 0, championStats: { maxHealth: 1000, currentHealth: 600 } },
+    }))).toBe(false);
+  });
+
+  it('returns false when activePlayer.currentGold is not a number', () => {
+    expect(isValidSnapshot(makeValidSnapshot({
+      activePlayer: { riotId: 'x', riotIdGameName: 'x', level: 1, currentGold: null, championStats: { maxHealth: 1000, currentHealth: 600 } },
+    }))).toBe(false);
   });
 });

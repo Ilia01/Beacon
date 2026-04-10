@@ -12,9 +12,14 @@ export function isValidSnapshot(data: unknown): data is GameSnapshot {
   return (
     typeof activePlayer === 'object' &&
     activePlayer !== null &&
+    typeof activePlayer.riotId === 'string' &&
+    typeof activePlayer.riotIdGameName === 'string' &&
+    typeof activePlayer.level === 'number' &&
+    typeof activePlayer.currentGold === 'number' &&
     typeof championStats === 'object' &&
     championStats !== null &&
     typeof championStats.maxHealth === 'number' &&
+    typeof championStats.currentHealth === 'number' &&
     Array.isArray(d.allPlayers) &&
     typeof events === 'object' &&
     events !== null &&
