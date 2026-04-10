@@ -142,6 +142,10 @@ app.whenReady().then(() => {
 
   globalShortcut.register('CommandOrControl+Shift+S', () => {
     const mode = cycleOutputMode();
+    // Intentionally bypasses sendStateChange so the mode confirmation is
+    // always shown as overlay text, even in speech-only mode. Without this,
+    // switching to speech-only would only announce the change via speech
+    // with no visual feedback.
     overlay.webContents.send('state-change', {
       state: 'active',
       prompt: `Output: ${mode}`,
