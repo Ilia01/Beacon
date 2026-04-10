@@ -19,7 +19,7 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');
-const preloadPath = path.join(rootDir, 'dist', 'preload', 'preload.js');
+const preloadPath = path.join(rootDir, 'dist-preload', 'preload', 'preload.js');
 
 const store = new Store<Position>({
   defaults: {
