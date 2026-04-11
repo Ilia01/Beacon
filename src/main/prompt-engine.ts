@@ -62,8 +62,6 @@ export class PromptEngine {
     this.outputMode = config.initialOutputMode;
   }
 
-  // ── Output mode ──────────────────────────────────────────────
-
   getOutputMode(): OutputMode {
     return this.outputMode;
   }
@@ -78,8 +76,6 @@ export class PromptEngine {
     this.outputMode = modes[(idx + 1) % modes.length]!;
     return this.outputMode;
   }
-
-  // ── State queries (for testing) ──────────────────────────────
 
   isPaused(): boolean {
     return this.paused;
@@ -96,8 +92,6 @@ export class PromptEngine {
   getLastGameSummary(): GameSummary | null {
     return this.lastGameSummary;
   }
-
-  // ── Core logic ───────────────────────────────────────────────
 
   handleServerMessage(
     response: ServerMessage,
@@ -143,8 +137,6 @@ export class PromptEngine {
   dispose(): void {
     this.clearCooldownTimer();
   }
-
-  // ── Private helpers ──────────────────────────────────────────
 
   private clearCooldownTimer(): void {
     if (this.cooldownTimer !== null) {
