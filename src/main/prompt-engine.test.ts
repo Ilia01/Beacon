@@ -161,7 +161,6 @@ describe('PromptEngine', () => {
         sink,
       );
 
-      // If a prompt was sent, engine should be in cooldown
       if (sink.stateChanges.some((e) => e.state === 'active')) {
         expect(engine.isInCooldown()).toBe(true);
       }
@@ -190,7 +189,6 @@ describe('PromptEngine', () => {
         sink,
       );
 
-      // dispose should not throw
       expect(() => engine.dispose()).not.toThrow();
     });
   });
@@ -208,7 +206,6 @@ describe('PromptEngine', () => {
       engine.togglePromptLoop(sink);
       expect(engine.isPaused()).toBe(true);
 
-      // Should have sent idle state change
       const idleChanges = sink.stateChanges.filter((e) => e.state === 'idle');
       expect(idleChanges.length).toBeGreaterThanOrEqual(1);
     });
@@ -240,7 +237,6 @@ describe('PromptEngine', () => {
         sink,
       );
 
-      // End game
       engine.handleServerMessage(
         {
           type: 'FETCH_ERROR',
@@ -297,7 +293,6 @@ describe('PromptEngine', () => {
         sink,
       );
 
-      // In speech mode, state-change should not be sent for active prompts
       const overlayChanges = sink.stateChanges.filter(
         (e) => e.state === 'active',
       );
@@ -306,7 +301,6 @@ describe('PromptEngine', () => {
   });
 });
 
-// Minimal snapshot that triggers at least one detector
 function makeMinimalSnapshot() {
   return {
     activePlayer: {
