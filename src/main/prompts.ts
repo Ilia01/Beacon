@@ -30,10 +30,14 @@ const engine = new PromptEngine({
 function sinkFromWindow(win: BrowserWindow): StateChangeSink {
   return {
     sendStateChange(event) {
-      win.webContents.send('state-change', event);
+      if (!win.isDestroyed()) {
+        win.webContents.send('state-change', event);
+      }
     },
     sendSpeakPrompt(text) {
-      win.webContents.send('speak-prompt', text);
+      if (!win.isDestroyed()) {
+        win.webContents.send('speak-prompt', text);
+      }
     },
   };
 }
