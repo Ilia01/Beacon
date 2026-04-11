@@ -246,4 +246,11 @@ test.describe('DOM Element Verification', () => {
     await expect(page.locator('#prompt-text')).toBeVisible();
     await expect(page.locator('#beacon')).toBeVisible();
   });
+
+  test('coach element starts with idle class', async ({ page }) => {
+    await loadRendererWithMocks(page);
+
+    const coach = page.locator('#coach');
+    await expect(coach).toHaveClass(/idle/);
+  });
 });
