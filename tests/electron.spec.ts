@@ -61,14 +61,19 @@ test.describe('IPC State Change Handling', () => {
     await loadRendererWithMocks(page);
 
     await page.evaluate(() => {
-      (window as any).__mockAPI.triggerStateChange({ state: 'active', prompt: 'Test prompt' });
+      (window as any).__mockAPI.triggerStateChange({
+        state: 'active',
+        prompt: 'Test prompt',
+      });
     });
 
     const coach = page.locator('#coach');
     await expect(coach).toHaveClass(/active/);
   });
 
-  test('coach element gets cooldown class on cooldown state', async ({ page }) => {
+  test('coach element gets cooldown class on cooldown state', async ({
+    page,
+  }) => {
     await loadRendererWithMocks(page);
 
     await page.evaluate(() => {
@@ -94,7 +99,10 @@ test.describe('IPC State Change Handling', () => {
     await loadRendererWithMocks(page);
 
     await page.evaluate(() => {
-      (window as any).__mockAPI.triggerStateChange({ state: 'active', prompt: 'Push the wave' });
+      (window as any).__mockAPI.triggerStateChange({
+        state: 'active',
+        prompt: 'Push the wave',
+      });
     });
 
     const promptText = page.locator('#prompt-text');
@@ -105,7 +113,10 @@ test.describe('IPC State Change Handling', () => {
     await loadRendererWithMocks(page);
 
     await page.evaluate(() => {
-      (window as any).__mockAPI.triggerStateChange({ state: 'active', prompt: 'Recall now' });
+      (window as any).__mockAPI.triggerStateChange({
+        state: 'active',
+        prompt: 'Recall now',
+      });
     });
 
     await page.evaluate(() => {
@@ -118,7 +129,9 @@ test.describe('IPC State Change Handling', () => {
 });
 
 test.describe('Drag Position Tracking', () => {
-  test('setPosition is called with correct delta during drag', async ({ page }) => {
+  test('setPosition is called with correct delta during drag', async ({
+    page,
+  }) => {
     await loadRendererWithMocks(page);
 
     const beacon = page.locator('#beacon');
@@ -126,26 +139,48 @@ test.describe('Drag Position Tracking', () => {
 
     await page.evaluate(() => {
       document.dispatchEvent(
-        new MouseEvent('mousemove', { bubbles: true, screenX: 150, screenY: 120 })
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          screenX: 150,
+          screenY: 120,
+        }),
       );
     });
 
-    const calls = await page.evaluate(() => (window as any).__mockAPI.positionCalls);
+    const calls = await page.evaluate(
+      () => (window as any).__mockAPI.positionCalls,
+    );
     expect(calls).toContainEqual({ dx: 50, dy: 20 });
   });
 
-  test('position delta is calculated correctly over multiple moves', async ({ page }) => {
+  test('position delta is calculated correctly over multiple moves', async ({
+    page,
+  }) => {
     await loadRendererWithMocks(page);
 
     const beacon = page.locator('#beacon');
     await beacon.dispatchEvent('mousedown', { screenX: 100, screenY: 100 });
 
     await page.evaluate(() => {
-      document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, screenX: 110, screenY: 105 }));
-      document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, screenX: 120, screenY: 110 }));
+      document.dispatchEvent(
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          screenX: 110,
+          screenY: 105,
+        }),
+      );
+      document.dispatchEvent(
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          screenX: 120,
+          screenY: 110,
+        }),
+      );
     });
 
-    const calls = await page.evaluate(() => (window as any).__mockAPI.positionCalls);
+    const calls = await page.evaluate(
+      () => (window as any).__mockAPI.positionCalls,
+    );
     expect(calls.length).toBe(2);
     expect(calls[0]).toEqual({ dx: 10, dy: 5 });
     expect(calls[1]).toEqual({ dx: 10, dy: 5 });
@@ -159,7 +194,11 @@ test.describe('Drag Position Tracking', () => {
 
     await page.evaluate(() => {
       document.dispatchEvent(
-        new MouseEvent('mousemove', { bubbles: true, screenX: 150, screenY: 120 })
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          screenX: 150,
+          screenY: 120,
+        }),
       );
     });
 
@@ -169,11 +208,17 @@ test.describe('Drag Position Tracking', () => {
 
     await page.evaluate(() => {
       document.dispatchEvent(
-        new MouseEvent('mousemove', { bubbles: true, screenX: 200, screenY: 200 })
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          screenX: 200,
+          screenY: 200,
+        }),
       );
     });
 
-    const calls = await page.evaluate(() => (window as any).__mockAPI.positionCalls);
+    const calls = await page.evaluate(
+      () => (window as any).__mockAPI.positionCalls,
+    );
     expect(calls.length).toBe(1);
   });
 });
@@ -186,7 +231,9 @@ test.describe('Speak Prompt Handling', () => {
       (window as any).__mockAPI.triggerSpeakPrompt('Ward the river');
     });
 
-    const prompts = await page.evaluate(() => (window as any).__mockAPI.speakPrompts);
+    const prompts = await page.evaluate(
+      () => (window as any).__mockAPI.speakPrompts,
+    );
     expect(prompts).toContain('Ward the river');
   });
 });

@@ -13,13 +13,13 @@ The prompt engine polls the Riot Live Client API every second. 14 detectors run 
 | Detector                    | Category        | Priority |
 | --------------------------- | --------------- | -------- |
 | Player dead                 | Mental          | 95       |
-| Teamfight (3+ kills in 10s)| Macro           | 90       |
+| Teamfight (3+ kills in 10s) | Macro           | 90       |
 | Baron spawning soon         | Objectives      | 88       |
 | Got a kill                  | Macro           | 85       |
 | Dragon spawning soon        | Objectives      | 82       |
 | Objective taken             | Objectives      | 80       |
 | Low HP (under 30%)          | Reset timing    | 75       |
-| Level spike (2,3,6,9,11,16)| Trading         | 72       |
+| Level spike (2,3,6,9,11,16) | Trading         | 72       |
 | Enemy laner dead            | Macro           | 70       |
 | Enemy completed an item     | Trading         | 70       |
 | You completed an item       | Trading         | 65       |

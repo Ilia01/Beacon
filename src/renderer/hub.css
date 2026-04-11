@@ -207,12 +207,19 @@ body {
 
 /* Animations */
 @keyframes breathe {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.85; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.85;
+  }
 }
 
 @keyframes spin-ring {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Connected state */
@@ -250,8 +257,14 @@ body {
 }
 
 @keyframes ping-wave {
-  0% { inset: 0; opacity: 0.5; }
-  100% { inset: -20px; opacity: 0; }
+  0% {
+    inset: 0;
+    opacity: 0.5;
+  }
+  100% {
+    inset: -20px;
+    opacity: 0;
+  }
 }
 
 /* Error state */

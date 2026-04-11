@@ -1,7 +1,11 @@
 import type { GameEvent, GameSnapshot } from '../riot.types.js';
 import type { PromptCategory } from '../types.js';
 import { getGamePhase, getCategoryWeight } from './phases.js';
-import { ALL_DETECTORS, getRealItems, type DetectorResult } from './detectors.js';
+import {
+  ALL_DETECTORS,
+  getRealItems,
+  type DetectorResult,
+} from './detectors.js';
 
 export type ContextResult = {
   category: PromptCategory;

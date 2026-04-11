@@ -54,7 +54,9 @@ describe('resolveTemplate', () => {
   it('leaves unknown placeholders unchanged', () => {
     const template = 'Hello {name}, your score is {score}';
     const data = { name: 'Bob' };
-    expect(resolveTemplate(template, data)).toBe('Hello Bob, your score is {score}');
+    expect(resolveTemplate(template, data)).toBe(
+      'Hello Bob, your score is {score}',
+    );
   });
 
   it('returns template unchanged when data is empty', () => {
@@ -70,7 +72,9 @@ describe('resolveTemplate', () => {
   it('handles duplicate placeholders', () => {
     const template = '{name} said hello to {name}';
     const data = { name: 'Charlie' };
-    expect(resolveTemplate(template, data)).toBe('Charlie said hello to Charlie');
+    expect(resolveTemplate(template, data)).toBe(
+      'Charlie said hello to Charlie',
+    );
   });
 
   it('replaces consecutive placeholders', () => {

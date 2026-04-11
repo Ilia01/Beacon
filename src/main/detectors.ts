@@ -1,9 +1,4 @@
-import type {
-  ActivePlayer,
-  GameEvent,
-  GameSnapshot,
-  Player,
-} from '../riot.types.js';
+import type { GameEvent, GameSnapshot, Player } from '../riot.types.js';
 import type { PromptCategory } from '../types.js';
 import type { ContextState } from './context.js';
 import {
@@ -363,7 +358,9 @@ export function detectLevelSpike(input: DetectorInput): DetectorResult | null {
   return null;
 }
 
-export function detectAbilitySpike(input: DetectorInput): DetectorResult | null {
+export function detectAbilitySpike(
+  input: DetectorInput,
+): DetectorResult | null {
   const abilities = input.snapshot.activePlayer.abilities;
   const prev = input.state.lastAbilityLevels;
 

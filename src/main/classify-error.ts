@@ -19,8 +19,7 @@ export function classifyError(error: unknown): FetchErrorCategory {
     return 'game_not_running';
   }
 
-  const nestedCode =
-    (error.cause as { code?: string } | undefined)?.code ?? '';
+  const nestedCode = (error.cause as { code?: string } | undefined)?.code ?? '';
 
   if (CERT_ERROR_CODES.has(code) || CERT_ERROR_CODES.has(nestedCode)) {
     return 'cert_error';

@@ -39,7 +39,13 @@ function createMockSetupScript() {
 test.describe('renderer.js', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(createMockSetupScript());
-    const htmlPath = path.join(__dirname, '..', 'src', 'renderer', 'index.html');
+    const htmlPath = path.join(
+      __dirname,
+      '..',
+      'src',
+      'renderer',
+      'index.html',
+    );
     await page.goto(pathToFileURL(htmlPath).href);
   });
 
@@ -53,18 +59,26 @@ test.describe('renderer.js', () => {
     await expect(promptText).toBeVisible();
   });
 
-  test('beacon element is visible and receives drag events', async ({ page }) => {
+  test('beacon element is visible and receives drag events', async ({
+    page,
+  }) => {
     const beacon = page.locator('#beacon');
     await expect(beacon).toBeVisible();
 
     await beacon.dispatchEvent('mousedown', { screenX: 100, screenY: 100 });
     await page.evaluate(() => {
       document.dispatchEvent(
-        new MouseEvent('mousemove', { bubbles: true, screenX: 150, screenY: 120 })
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          screenX: 150,
+          screenY: 120,
+        }),
       );
     });
 
-    const calls = await page.evaluate(() => (window as any).__mockAPI.positionCalls);
+    const calls = await page.evaluate(
+      () => (window as any).__mockAPI.positionCalls,
+    );
     expect(calls.length).toBeGreaterThan(0);
   });
 

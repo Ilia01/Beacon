@@ -19,7 +19,9 @@ import {
   detectTabCheck,
 } from './detectors.js';
 
-function makeItem(overrides: Partial<Item> & { itemID: number; displayName: string }): Item {
+function makeItem(
+  overrides: Partial<Item> & { itemID: number; displayName: string },
+): Item {
   return {
     canUse: false,
     consumable: false,
@@ -74,24 +76,26 @@ const defaultSpells: Player['summonerSpells'] = {
   },
 };
 
-function makeSnapshot(overrides: {
-  gameTime?: number;
-  level?: number;
-  gold?: number;
-  isDead?: boolean;
-  isEnemyDead?: boolean;
-  enemyRespawnTimer?: number;
-  currentHealth?: number;
-  maxHealth?: number;
-  kills?: number;
-  deaths?: number;
-  assists?: number;
-  myItems?: Player['items'];
-  enemyItems?: Player['items'];
-  events?: GameEvent[];
-  myCs?: number;
-  enemyCs?: number;
-} = {}): GameSnapshot {
+function makeSnapshot(
+  overrides: {
+    gameTime?: number;
+    level?: number;
+    gold?: number;
+    isDead?: boolean;
+    isEnemyDead?: boolean;
+    enemyRespawnTimer?: number;
+    currentHealth?: number;
+    maxHealth?: number;
+    kills?: number;
+    deaths?: number;
+    assists?: number;
+    myItems?: Player['items'];
+    enemyItems?: Player['items'];
+    events?: GameEvent[];
+    myCs?: number;
+    enemyCs?: number;
+  } = {},
+): GameSnapshot {
   const gameTime = overrides.gameTime ?? 300;
   const isDead = overrides.isDead ?? false;
   const isEnemyDead = overrides.isEnemyDead ?? false;
@@ -106,32 +110,95 @@ function makeSnapshot(overrides: {
   return {
     activePlayer: {
       abilities: {
-        Passive: { displayName: 'Passive', id: 'P', rawDescription: '', rawDisplayName: '' },
-        Q: { abilityLevel: 1, displayName: 'Q', id: 'Q', rawDescription: '', rawDisplayName: '' },
-        W: { abilityLevel: 0, displayName: 'W', id: 'W', rawDescription: '', rawDisplayName: '' },
-        E: { abilityLevel: 0, displayName: 'E', id: 'E', rawDescription: '', rawDisplayName: '' },
-        R: { abilityLevel: 0, displayName: 'R', id: 'R', rawDescription: '', rawDisplayName: '' },
+        Passive: {
+          displayName: 'Passive',
+          id: 'P',
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        Q: {
+          abilityLevel: 1,
+          displayName: 'Q',
+          id: 'Q',
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        W: {
+          abilityLevel: 0,
+          displayName: 'W',
+          id: 'W',
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        E: {
+          abilityLevel: 0,
+          displayName: 'E',
+          id: 'E',
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        R: {
+          abilityLevel: 0,
+          displayName: 'R',
+          id: 'R',
+          rawDescription: '',
+          rawDisplayName: '',
+        },
       },
       championStats: {
-        abilityHaste: 0, abilityPower: 0, armor: 30,
-        armorPenetrationFlat: 0, armorPenetrationPercent: 1,
-        attackDamage: 60, attackRange: 175, attackSpeed: 0.65,
-        bonusArmorPenetrationPercent: 1, bonusMagicPenetrationPercent: 1,
-        critChance: 0, critDamage: 200,
-        currentHealth, maxHealth,
-        healShieldPower: 0, healthRegenRate: 1.8, lifeSteal: 0,
-        magicLethality: 0, magicPenetrationFlat: 0, magicPenetrationPercent: 1,
-        magicResist: 32, moveSpeed: 340, omnivamp: 0,
-        physicalLethality: 0, physicalVamp: 0,
-        resourceMax: 400, resourceRegenRate: 1.6, resourceType: 'MANA',
-        resourceValue: 400, spellVamp: 0, tenacity: 5,
+        abilityHaste: 0,
+        abilityPower: 0,
+        armor: 30,
+        armorPenetrationFlat: 0,
+        armorPenetrationPercent: 1,
+        attackDamage: 60,
+        attackRange: 175,
+        attackSpeed: 0.65,
+        bonusArmorPenetrationPercent: 1,
+        bonusMagicPenetrationPercent: 1,
+        critChance: 0,
+        critDamage: 200,
+        currentHealth,
+        maxHealth,
+        healShieldPower: 0,
+        healthRegenRate: 1.8,
+        lifeSteal: 0,
+        magicLethality: 0,
+        magicPenetrationFlat: 0,
+        magicPenetrationPercent: 1,
+        magicResist: 32,
+        moveSpeed: 340,
+        omnivamp: 0,
+        physicalLethality: 0,
+        physicalVamp: 0,
+        resourceMax: 400,
+        resourceRegenRate: 1.6,
+        resourceType: 'MANA',
+        resourceValue: 400,
+        spellVamp: 0,
+        tenacity: 5,
       },
       currentGold: overrides.gold ?? 500,
       fullRunes: {
         generalRunes: [],
-        keystone: { displayName: 'Conqueror', id: 8010, rawDescription: '', rawDisplayName: '' },
-        primaryRuneTree: { displayName: 'Precision', id: 8000, rawDescription: '', rawDisplayName: '' },
-        secondaryRuneTree: { displayName: 'Resolve', id: 8400, rawDescription: '', rawDisplayName: '' },
+        keystone: {
+          displayName: 'Conqueror',
+          id: 8010,
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        primaryRuneTree: {
+          displayName: 'Precision',
+          id: 8000,
+          rawDescription: '',
+          rawDisplayName: '',
+        },
+        secondaryRuneTree: {
+          displayName: 'Resolve',
+          id: 8400,
+          rawDescription: '',
+          rawDisplayName: '',
+        },
         statRunes: [],
       },
       level: overrides.level ?? 1,
@@ -142,22 +209,32 @@ function makeSnapshot(overrides: {
     },
     allPlayers: [
       {
-        championName: 'Sylas', isBot: false, isDead,
+        championName: 'Sylas',
+        isBot: false,
+        isDead,
         items: overrides.myItems ?? [],
         level: overrides.level ?? 1,
-        position: 'MIDDLE', respawnTimer: isDead ? 10 : 0,
-        riotId: 'Player#123', riotIdGameName: 'Player', riotIdTagLine: '123',
+        position: 'MIDDLE',
+        respawnTimer: isDead ? 10 : 0,
+        riotId: 'Player#123',
+        riotIdGameName: 'Player',
+        riotIdTagLine: '123',
         runes: defaultRunes,
         scores: { ...defaultScores, kills, deaths, assists, creepScore: myCs },
         summonerSpells: defaultSpells,
         team: 'ORDER',
       },
       {
-        championName: 'Zed', isBot: false, isDead: isEnemyDead,
+        championName: 'Zed',
+        isBot: false,
+        isDead: isEnemyDead,
         items: overrides.enemyItems ?? [],
         level: overrides.level ?? 1,
-        position: 'MIDDLE', respawnTimer: overrides.enemyRespawnTimer ?? 0,
-        riotId: 'Enemy#456', riotIdGameName: 'Enemy', riotIdTagLine: '456',
+        position: 'MIDDLE',
+        respawnTimer: overrides.enemyRespawnTimer ?? 0,
+        riotId: 'Enemy#456',
+        riotIdGameName: 'Enemy',
+        riotIdTagLine: '456',
         runes: defaultRunes,
         scores: { ...defaultScores, kills: 0, deaths: 0, creepScore: enemyCs },
         summonerSpells: defaultSpells,
@@ -166,7 +243,11 @@ function makeSnapshot(overrides: {
     ],
     events: { Events: overrides.events ?? [] },
     gameData: {
-      gameMode: 'CLASSIC', gameTime, mapName: 'Map11', mapNumber: 11, mapTerrain: 'Default',
+      gameMode: 'CLASSIC',
+      gameTime,
+      mapName: 'Map11',
+      mapNumber: 11,
+      mapTerrain: 'Default',
     },
   };
 }
@@ -177,9 +258,13 @@ function makeInput(
   newState: ContextState,
   newEvents: GameEvent[] = snapshot.events.Events,
 ): DetectorInput {
-  const me = snapshot.allPlayers.find((p) => p.riotId === snapshot.activePlayer.riotId);
+  const me = snapshot.allPlayers.find(
+    (p) => p.riotId === snapshot.activePlayer.riotId,
+  );
   const enemyLaner = me
-    ? snapshot.allPlayers.find((p) => p.position === me.position && p.team !== me.team)
+    ? snapshot.allPlayers.find(
+        (p) => p.position === me.position && p.team !== me.team,
+      )
     : undefined;
   return { snapshot, me, enemyLaner, newEvents, state, newState };
 }
@@ -219,7 +304,15 @@ describe('detectDeath', () => {
 describe('detectPlayerKill', () => {
   it('returns macro when player gets a kill', () => {
     const snap = makeSnapshot({
-      events: [{ EventID: 1, EventName: 'ChampionKill', EventTime: 300, KillerName: 'Player', VictimName: 'Enemy' }],
+      events: [
+        {
+          EventID: 1,
+          EventName: 'ChampionKill',
+          EventTime: 300,
+          KillerName: 'Player',
+          VictimName: 'Enemy',
+        },
+      ],
     });
     const input = makeInput(snap, makeState(), makeState(), snap.events.Events);
     const result = detectPlayerKill(input);
@@ -231,7 +324,14 @@ describe('detectPlayerKill', () => {
 
   it('returns null when someone else gets the kill', () => {
     const snap = makeSnapshot({
-      events: [{ EventID: 1, EventName: 'ChampionKill', EventTime: 300, KillerName: 'SomeoneElse' }],
+      events: [
+        {
+          EventID: 1,
+          EventName: 'ChampionKill',
+          EventTime: 300,
+          KillerName: 'SomeoneElse',
+        },
+      ],
     });
     const input = makeInput(snap, makeState(), makeState(), snap.events.Events);
     expect(detectPlayerKill(input)).toBeNull();
@@ -240,7 +340,9 @@ describe('detectPlayerKill', () => {
 
 describe('detectObjectiveTaken', () => {
   it('returns objectives for DragonKill', () => {
-    const snap = makeSnapshot({ events: [{ EventID: 1, EventName: 'DragonKill', EventTime: 300 }] });
+    const snap = makeSnapshot({
+      events: [{ EventID: 1, EventName: 'DragonKill', EventTime: 300 }],
+    });
     const input = makeInput(snap, makeState(), makeState(), snap.events.Events);
     const result = detectObjectiveTaken(input);
     expect(result).not.toBeNull();
@@ -249,7 +351,9 @@ describe('detectObjectiveTaken', () => {
   });
 
   it('returns objectives for TurretKilled', () => {
-    const snap = makeSnapshot({ events: [{ EventID: 1, EventName: 'TurretKilled', EventTime: 300 }] });
+    const snap = makeSnapshot({
+      events: [{ EventID: 1, EventName: 'TurretKilled', EventTime: 300 }],
+    });
     const input = makeInput(snap, makeState(), makeState(), snap.events.Events);
     const result = detectObjectiveTaken(input);
     expect(result).not.toBeNull();
@@ -267,9 +371,24 @@ describe('detectTeamfight', () => {
   it('returns macro when teamfight is won (3+ kills, more from our team)', () => {
     const snap = makeSnapshot({
       events: [
-        { EventID: 1, EventName: 'ChampionKill', EventTime: 295, KillerName: 'Player' },
-        { EventID: 2, EventName: 'ChampionKill', EventTime: 296, KillerName: 'Player' },
-        { EventID: 3, EventName: 'ChampionKill', EventTime: 297, KillerName: 'Enemy' },
+        {
+          EventID: 1,
+          EventName: 'ChampionKill',
+          EventTime: 295,
+          KillerName: 'Player',
+        },
+        {
+          EventID: 2,
+          EventName: 'ChampionKill',
+          EventTime: 296,
+          KillerName: 'Player',
+        },
+        {
+          EventID: 3,
+          EventName: 'ChampionKill',
+          EventTime: 297,
+          KillerName: 'Enemy',
+        },
       ],
       gameTime: 300,
     });
@@ -283,9 +402,24 @@ describe('detectTeamfight', () => {
   it('returns macro when teamfight is lost', () => {
     const snap = makeSnapshot({
       events: [
-        { EventID: 1, EventName: 'ChampionKill', EventTime: 295, KillerName: 'Enemy' },
-        { EventID: 2, EventName: 'ChampionKill', EventTime: 296, KillerName: 'Enemy' },
-        { EventID: 3, EventName: 'ChampionKill', EventTime: 297, KillerName: 'Player' },
+        {
+          EventID: 1,
+          EventName: 'ChampionKill',
+          EventTime: 295,
+          KillerName: 'Enemy',
+        },
+        {
+          EventID: 2,
+          EventName: 'ChampionKill',
+          EventTime: 296,
+          KillerName: 'Enemy',
+        },
+        {
+          EventID: 3,
+          EventName: 'ChampionKill',
+          EventTime: 297,
+          KillerName: 'Player',
+        },
       ],
       gameTime: 300,
     });
@@ -298,8 +432,18 @@ describe('detectTeamfight', () => {
   it('returns null when fewer than 3 kills', () => {
     const snap = makeSnapshot({
       events: [
-        { EventID: 1, EventName: 'ChampionKill', EventTime: 295, KillerName: 'Player' },
-        { EventID: 2, EventName: 'ChampionKill', EventTime: 296, KillerName: 'Enemy' },
+        {
+          EventID: 1,
+          EventName: 'ChampionKill',
+          EventTime: 295,
+          KillerName: 'Player',
+        },
+        {
+          EventID: 2,
+          EventName: 'ChampionKill',
+          EventTime: 296,
+          KillerName: 'Enemy',
+        },
       ],
       gameTime: 300,
     });
@@ -325,7 +469,11 @@ describe('detectHpCritical', () => {
   });
 
   it('returns null when player is dead', () => {
-    const snap = makeSnapshot({ currentHealth: 50, maxHealth: 700, isDead: true });
+    const snap = makeSnapshot({
+      currentHealth: 50,
+      maxHealth: 700,
+      isDead: true,
+    });
     const input = makeInput(snap, makeState(), makeState());
     expect(detectHpCritical(input)).toBeNull();
   });
@@ -362,10 +510,12 @@ describe('detectEnemyDeathWindow', () => {
 
 describe('detectItemCompleted', () => {
   it('returns trading when player completes a new item', () => {
-    const snap = makeSnapshot({ myItems: [
-      makeItem({ itemID: 1001, displayName: 'Boots' }),
-      makeItem({ itemID: 6691, displayName: "Doran's Blade" }),
-    ]});
+    const snap = makeSnapshot({
+      myItems: [
+        makeItem({ itemID: 1001, displayName: 'Boots' }),
+        makeItem({ itemID: 6691, displayName: "Doran's Blade" }),
+      ],
+    });
     const prevState = makeState({ lastMyItemIds: [1001] });
     const newState = makeState({ lastMyItemIds: [1001] });
     const input = makeInput(snap, prevState, newState);
@@ -377,10 +527,12 @@ describe('detectItemCompleted', () => {
   });
 
   it('returns trading when enemy completes a new item', () => {
-    const snap = makeSnapshot({ enemyItems: [
-      makeItem({ itemID: 1001, displayName: 'Boots' }),
-      makeItem({ itemID: 6691, displayName: 'Long Sword' }),
-    ]});
+    const snap = makeSnapshot({
+      enemyItems: [
+        makeItem({ itemID: 1001, displayName: 'Boots' }),
+        makeItem({ itemID: 6691, displayName: 'Long Sword' }),
+      ],
+    });
     const prevState = makeState({ lastEnemyItemIds: [1001] });
     const newState = makeState({ lastEnemyItemIds: [1001] });
     const input = makeInput(snap, prevState, newState);
@@ -390,7 +542,15 @@ describe('detectItemCompleted', () => {
   });
 
   it('filters out consumables', () => {
-    const snap = makeSnapshot({ myItems: [makeItem({ itemID: 2003, displayName: 'Health Potion', consumable: true })] });
+    const snap = makeSnapshot({
+      myItems: [
+        makeItem({
+          itemID: 2003,
+          displayName: 'Health Potion',
+          consumable: true,
+        }),
+      ],
+    });
     const prevState = makeState({ lastMyItemIds: [] });
     const newState = makeState({ lastMyItemIds: [] });
     const input = makeInput(snap, prevState, newState);
@@ -398,7 +558,9 @@ describe('detectItemCompleted', () => {
   });
 
   it('filters out warding items (itemID 3340)', () => {
-    const snap = makeSnapshot({ myItems: [makeItem({ itemID: 3340, displayName: 'Control Ward' })] });
+    const snap = makeSnapshot({
+      myItems: [makeItem({ itemID: 3340, displayName: 'Control Ward' })],
+    });
     const prevState = makeState({ lastMyItemIds: [] });
     const newState = makeState({ lastMyItemIds: [] });
     const input = makeInput(snap, prevState, newState);
@@ -435,7 +597,11 @@ describe('detectKdaAdaptive', () => {
 describe('detectObjectiveUpcoming', () => {
   it('returns baron_upcoming before first baron spawn', () => {
     const snap = makeSnapshot({ gameTime: 1150 });
-    const input = makeInput(snap, makeState({ lastBaronKillTime: 0 }), makeState({ lastBaronKillTime: 0 }));
+    const input = makeInput(
+      snap,
+      makeState({ lastBaronKillTime: 0 }),
+      makeState({ lastBaronKillTime: 0 }),
+    );
     const result = detectObjectiveUpcoming(input);
     expect(result).not.toBeNull();
     expect(result!.reason).toBe('baron_upcoming');
@@ -443,7 +609,11 @@ describe('detectObjectiveUpcoming', () => {
 
   it('returns dragon_upcoming before first dragon spawn', () => {
     const snap = makeSnapshot({ gameTime: 250 });
-    const input = makeInput(snap, makeState({ lastDragonKillTime: 0 }), makeState({ lastDragonKillTime: 0 }));
+    const input = makeInput(
+      snap,
+      makeState({ lastDragonKillTime: 0 }),
+      makeState({ lastDragonKillTime: 0 }),
+    );
     const result = detectObjectiveUpcoming(input);
     expect(result).not.toBeNull();
     expect(result!.reason).toBe('dragon_upcoming');
@@ -507,7 +677,11 @@ describe('detectGold', () => {
 describe('detectLevelSpike', () => {
   it('returns trading on level 6 spike', () => {
     const snap = makeSnapshot({ level: 6 });
-    const input = makeInput(snap, makeState({ lastKnownLevel: 5 }), makeState({ lastKnownLevel: 5 }));
+    const input = makeInput(
+      snap,
+      makeState({ lastKnownLevel: 5 }),
+      makeState({ lastKnownLevel: 5 }),
+    );
     const result = detectLevelSpike(input);
     expect(result).not.toBeNull();
     expect(result!.category).toBe('trading');
@@ -516,13 +690,21 @@ describe('detectLevelSpike', () => {
 
   it('returns null for non-spike levels', () => {
     const snap = makeSnapshot({ level: 4 });
-    const input = makeInput(snap, makeState({ lastKnownLevel: 3 }), makeState({ lastKnownLevel: 3 }));
+    const input = makeInput(
+      snap,
+      makeState({ lastKnownLevel: 3 }),
+      makeState({ lastKnownLevel: 3 }),
+    );
     expect(detectLevelSpike(input)).toBeNull();
   });
 
   it('returns null when level unchanged', () => {
     const snap = makeSnapshot({ level: 6 });
-    const input = makeInput(snap, makeState({ lastKnownLevel: 6 }), makeState({ lastKnownLevel: 6 }));
+    const input = makeInput(
+      snap,
+      makeState({ lastKnownLevel: 6 }),
+      makeState({ lastKnownLevel: 6 }),
+    );
     expect(detectLevelSpike(input)).toBeNull();
   });
 });
@@ -530,7 +712,11 @@ describe('detectLevelSpike', () => {
 describe('detectVision', () => {
   it('returns vision after interval passes', () => {
     const snap = makeSnapshot({ gameTime: 500 });
-    const input = makeInput(snap, makeState({ lastVisionCheckAt: 200 }), makeState({ lastVisionCheckAt: 200 }));
+    const input = makeInput(
+      snap,
+      makeState({ lastVisionCheckAt: 200 }),
+      makeState({ lastVisionCheckAt: 200 }),
+    );
     const result = detectVision(input);
     expect(result).not.toBeNull();
     expect(result!.category).toBe('vision');
@@ -540,7 +726,11 @@ describe('detectVision', () => {
 
   it('returns null when interval not reached', () => {
     const snap = makeSnapshot({ gameTime: 300 });
-    const input = makeInput(snap, makeState({ lastVisionCheckAt: 200 }), makeState({ lastVisionCheckAt: 200 }));
+    const input = makeInput(
+      snap,
+      makeState({ lastVisionCheckAt: 200 }),
+      makeState({ lastVisionCheckAt: 200 }),
+    );
     expect(detectVision(input)).toBeNull();
   });
 });
@@ -548,7 +738,11 @@ describe('detectVision', () => {
 describe('detectTabCheck', () => {
   it('returns tab_check after interval passes', () => {
     const snap = makeSnapshot({ gameTime: 400 });
-    const input = makeInput(snap, makeState({ lastTabCheckAt: 200 }), makeState({ lastTabCheckAt: 200 }));
+    const input = makeInput(
+      snap,
+      makeState({ lastTabCheckAt: 200 }),
+      makeState({ lastTabCheckAt: 200 }),
+    );
     const result = detectTabCheck(input);
     expect(result).not.toBeNull();
     expect(result!.category).toBe('tab_check');
@@ -558,7 +752,11 @@ describe('detectTabCheck', () => {
 
   it('returns null when interval not reached', () => {
     const snap = makeSnapshot({ gameTime: 300 });
-    const input = makeInput(snap, makeState({ lastTabCheckAt: 200 }), makeState({ lastTabCheckAt: 200 }));
+    const input = makeInput(
+      snap,
+      makeState({ lastTabCheckAt: 200 }),
+      makeState({ lastTabCheckAt: 200 }),
+    );
     expect(detectTabCheck(input)).toBeNull();
   });
 });

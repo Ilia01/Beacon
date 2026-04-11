@@ -45,7 +45,9 @@ export type EngineTransition =
 
 const VALID_OUTPUT_MODES = new Set<OutputMode>(['overlay', 'speech', 'both']);
 const configMode = (config as { output_mode?: string }).output_mode;
-const initialOutputMode: OutputMode = VALID_OUTPUT_MODES.has(configMode as OutputMode)
+const initialOutputMode: OutputMode = VALID_OUTPUT_MODES.has(
+  configMode as OutputMode,
+)
   ? (configMode as OutputMode)
   : 'both';
 let outputMode: OutputMode = initialOutputMode;
