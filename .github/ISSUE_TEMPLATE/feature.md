@@ -6,9 +6,6 @@ labels: enhancement
 
 **Problem**
 
-
 **Proposed solution**
 
-
 **Alternatives considered**
-

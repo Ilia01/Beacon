@@ -2,10 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { classifyError } from './classify-error.js';
 import { AxiosError } from 'axios';
 
-function makeAxiosError(
-  code: string,
-  cause?: { code: string },
-): AxiosError {
+function makeAxiosError(code: string, cause?: { code: string }): AxiosError {
   const error = new AxiosError('request failed', code);
   if (cause) {
     (error as { cause: unknown }).cause = cause;
@@ -27,9 +24,9 @@ describe('classifyError', () => {
   });
 
   it('returns cert_error for DEPTH_ZERO_SELF_SIGNED_CERT', () => {
-    expect(
-      classifyError(makeAxiosError('DEPTH_ZERO_SELF_SIGNED_CERT')),
-    ).toBe('cert_error');
+    expect(classifyError(makeAxiosError('DEPTH_ZERO_SELF_SIGNED_CERT'))).toBe(
+      'cert_error',
+    );
   });
 
   it('returns cert_error for UNABLE_TO_VERIFY_LEAF_SIGNATURE', () => {

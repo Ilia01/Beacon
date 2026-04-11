@@ -58,9 +58,7 @@ function makeSnapshot(
     creepScore?: number;
     enemyCreepScore?: number;
     events?: GameSnapshot['events']['Events'];
-    abilities?: Partial<
-      Record<'Q' | 'W' | 'E' | 'R', Partial<Abilities['Q']>>
-    >;
+    abilities?: Partial<Record<'Q' | 'W' | 'E' | 'R', Partial<Abilities['Q']>>>;
   } = {},
 ): GameSnapshot {
   const gameTime = overrides.gameTime ?? 300;

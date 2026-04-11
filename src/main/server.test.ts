@@ -73,16 +73,27 @@ describe('isValidSnapshot', () => {
   });
 
   it('returns false when activePlayer is null', () => {
-    const invalid = { activePlayer: null, allPlayers: [], events: {}, gameData: { gameTime: 300 } };
+    const invalid = {
+      activePlayer: null,
+      allPlayers: [],
+      events: {},
+      gameData: { gameTime: 300 },
+    };
     expect(isValidSnapshot(invalid)).toBe(false);
   });
 
   it('returns false when allPlayers is not an array', () => {
-    expect(isValidSnapshot(makeValidSnapshot({ allPlayers: 'not an array' }))).toBe(false);
+    expect(
+      isValidSnapshot(makeValidSnapshot({ allPlayers: 'not an array' })),
+    ).toBe(false);
   });
 
   it('returns false when events is missing', () => {
-    const invalid = { activePlayer: {}, allPlayers: [], gameData: { gameTime: 300 } };
+    const invalid = {
+      activePlayer: {},
+      allPlayers: [],
+      gameData: { gameTime: 300 },
+    };
     expect(isValidSnapshot(invalid)).toBe(false);
   });
 
@@ -92,19 +103,27 @@ describe('isValidSnapshot', () => {
   });
 
   it('returns false when gameTime is missing', () => {
-    expect(isValidSnapshot(makeValidSnapshot({ gameData: { gameMode: 'CLASSIC' } }))).toBe(false);
+    expect(
+      isValidSnapshot(makeValidSnapshot({ gameData: { gameMode: 'CLASSIC' } })),
+    ).toBe(false);
   });
 
   it('returns false when gameTime is not a number', () => {
-    expect(isValidSnapshot(makeValidSnapshot({ gameData: { gameTime: '300' } }))).toBe(false);
+    expect(
+      isValidSnapshot(makeValidSnapshot({ gameData: { gameTime: '300' } })),
+    ).toBe(false);
   });
 
   it('returns true when gameTime is zero', () => {
-    expect(isValidSnapshot(makeValidSnapshot({ gameData: { gameTime: 0 } }))).toBe(true);
+    expect(
+      isValidSnapshot(makeValidSnapshot({ gameData: { gameTime: 0 } })),
+    ).toBe(true);
   });
 
   it('returns false when events.Events is not an array', () => {
-    expect(isValidSnapshot(makeValidSnapshot({ events: { Events: 'not array' } }))).toBe(false);
+    expect(
+      isValidSnapshot(makeValidSnapshot({ events: { Events: 'not array' } })),
+    ).toBe(false);
   });
 
   it('returns false when championStats.maxHealth is missing', () => {

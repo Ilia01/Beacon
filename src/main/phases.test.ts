@@ -44,7 +44,8 @@ describe('getCategoryWeight', () => {
     });
 
     it('defaults unknown categories to 1', () => {
-      const unknownCategory = 'unknown_category' as import('../types.js').PromptCategory;
+      const unknownCategory =
+        'unknown_category' as import('../types.js').PromptCategory;
       expect(getCategoryWeight('early_laning', unknownCategory)).toBe(1);
       expect(getCategoryWeight('mid_game', unknownCategory)).toBe(1);
     });
